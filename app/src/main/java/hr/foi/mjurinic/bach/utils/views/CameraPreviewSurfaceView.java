@@ -1,4 +1,4 @@
-package hr.foi.mjurinic.bach.utils.view;
+package hr.foi.mjurinic.bach.utils.views;
 
 import android.content.Context;
 import android.hardware.Camera;

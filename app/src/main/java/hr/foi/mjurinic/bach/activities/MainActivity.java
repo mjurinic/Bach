@@ -1,13 +1,16 @@
 package hr.foi.mjurinic.bach.activities;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
+import android.net.wifi.p2p.WifiP2pManager;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -15,20 +18,35 @@ import android.widget.FrameLayout;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import hr.foi.mjurinic.bach.R;
-import hr.foi.mjurinic.bach.utils.view.CameraPreviewSurfaceView;
+import hr.foi.mjurinic.bach.dagger.components.DaggerWatchComponent;
+import hr.foi.mjurinic.bach.dagger.modules.WatchModule;
+import hr.foi.mjurinic.bach.mvp.presenters.Impl.WatchPresenterImpl;
+import hr.foi.mjurinic.bach.mvp.views.WatchView;
+import hr.foi.mjurinic.bach.utils.receivers.WifiDirectBroadcastReceiver;
+import hr.foi.mjurinic.bach.utils.views.CameraPreviewSurfaceView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity implements WatchView {
 
     private static final int PERMISSION_REQUEST_CAMERA = 0;
+
+    private static final int PERMISSION_REQUEST_ACCESS_WIFI_STATE = 1;
+
+    private static final int PERMISSION_REQUEST_ACCESS_NETWORK_STATE = 2;
 
     @BindView(R.id.fl_camera_preview)
     FrameLayout cameraPreview;
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
+
+    @Inject
+    WatchPresenterImpl watchPresenterImpl;
 
     private int cameraFrontId = -1;
     private int cameraBackId = -1;
@@ -37,6 +55,10 @@ public class MainActivity extends AppCompatActivity {
     private boolean isFlashActive;
     private Camera camera;
     private CameraPreviewSurfaceView cameraPreviewSurfaceView;
+    private WifiP2pManager wifiManager;
+    private WifiP2pManager.Channel wifiChannel;
+    private BroadcastReceiver wifiBroadcastReceiver;
+    private IntentFilter intentFilter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,12 +67,15 @@ public class MainActivity extends AppCompatActivity {
 
         ButterKnife.bind(this);
 
+        DaggerWatchComponent.builder().
+                watchModule(new WatchModule(this)).
+                build().
+                inject(this);
+
         toolbar.setTitle("");
         setSupportActionBar(toolbar);
 
-        checkPermissions();
-
-        if (hasCameraPermission) {
+        if (hasPermissions()) {
             identifyCameras();
             initCamera(cameraFrontId != -1 ? cameraFrontId : cameraBackId);
         }
@@ -59,19 +84,28 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+
         releaseCamera();
+
+        if (wifiBroadcastReceiver != null) {
+            unregisterReceiver(wifiBroadcastReceiver);
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        if (hasCameraPermission) {
+        if (hasCameraPermission && camera == null) {
             if (cameraBackId == -1 && cameraFrontId == -1) {
                 identifyCameras();
             }
 
             initCamera(isBackCameraActive ? cameraBackId : cameraFrontId);
+        }
+
+        if (wifiBroadcastReceiver != null) {
+            registerReceiver(wifiBroadcastReceiver, intentFilter);
         }
     }
 
@@ -108,6 +142,30 @@ public class MainActivity extends AppCompatActivity {
                 hasCameraPermission = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
             }
         }
+    }
+
+    @OnClick(R.id.iv_broadcast)
+    void onBroadcastClick() {
+        initBroadcastReceiver();
+
+    }
+
+    @OnClick(R.id.iv_watch)
+    void onWatchClick() {
+        initBroadcastReceiver();
+        watchPresenterImpl.discoverWifiPeers(wifiManager, wifiChannel);
+    }
+
+    private void initBroadcastReceiver() {
+        wifiManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+        wifiChannel = wifiManager.initialize(this, getMainLooper(), null);
+        wifiBroadcastReceiver = new WifiDirectBroadcastReceiver(wifiManager, wifiChannel, this);
+
+        intentFilter = new IntentFilter();
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+
+        registerReceiver(wifiBroadcastReceiver, intentFilter);
     }
 
     private boolean hasFlash() {
@@ -155,12 +213,14 @@ public class MainActivity extends AppCompatActivity {
         cameraPreview.addView(cameraPreviewSurfaceView);
     }
 
-    private void checkPermissions() {
+    private boolean hasPermissions() {
         hasCameraPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
 
         if (!hasCameraPermission) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
         }
+
+        return hasCameraPermission;
     }
 
     private void flashOff() {
@@ -200,8 +260,6 @@ public class MainActivity extends AppCompatActivity {
         releaseCamera();
 
         initCamera(isBackCameraActive ? cameraFrontId : cameraBackId);
-
-        isBackCameraActive = !isBackCameraActive;
     }
 
     private void releaseCamera() {
@@ -210,5 +268,10 @@ public class MainActivity extends AppCompatActivity {
             camera.release();
             camera = null;
         }
+    }
+
+    @Override
+    public void listPeers() {
+        // TODO Dialog with peer list?
     }
 }

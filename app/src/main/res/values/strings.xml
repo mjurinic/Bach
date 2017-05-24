@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Bach</string>
+    <string name="error_general">An error occured.</string>
 </resources>
