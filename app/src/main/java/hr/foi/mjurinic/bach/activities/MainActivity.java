@@ -24,14 +24,17 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import hr.foi.mjurinic.bach.R;
-import hr.foi.mjurinic.bach.dagger.components.DaggerWatchComponent;
+import hr.foi.mjurinic.bach.dagger.components.DaggerMainActivityComponent;
+import hr.foi.mjurinic.bach.dagger.modules.StreamModule;
 import hr.foi.mjurinic.bach.dagger.modules.WatchModule;
+import hr.foi.mjurinic.bach.mvp.presenters.Impl.StreamPresenterImpl;
 import hr.foi.mjurinic.bach.mvp.presenters.Impl.WatchPresenterImpl;
+import hr.foi.mjurinic.bach.mvp.views.StreamView;
 import hr.foi.mjurinic.bach.mvp.views.WatchView;
 import hr.foi.mjurinic.bach.utils.receivers.WifiDirectBroadcastReceiver;
 import hr.foi.mjurinic.bach.utils.views.CameraPreviewSurfaceView;
 
-public class MainActivity extends BaseActivity implements WatchView {
+public class MainActivity extends BaseActivity implements WatchView, StreamView {
 
     private static final int PERMISSION_REQUEST_CAMERA = 0;
 
@@ -46,7 +49,10 @@ public class MainActivity extends BaseActivity implements WatchView {
     Toolbar toolbar;
 
     @Inject
-    WatchPresenterImpl watchPresenterImpl;
+    WatchPresenterImpl watchPresenter;
+
+    @Inject
+    StreamPresenterImpl streamPresenter;
 
     private int cameraFrontId = -1;
     private int cameraBackId = -1;
@@ -67,8 +73,9 @@ public class MainActivity extends BaseActivity implements WatchView {
 
         ButterKnife.bind(this);
 
-        DaggerWatchComponent.builder().
+        DaggerMainActivityComponent.builder().
                 watchModule(new WatchModule(this)).
+                streamModule(new StreamModule(this)).
                 build().
                 inject(this);
 
@@ -147,13 +154,13 @@ public class MainActivity extends BaseActivity implements WatchView {
     @OnClick(R.id.iv_broadcast)
     void onBroadcastClick() {
         initBroadcastReceiver();
-
+        streamPresenter.createWifiP2PGroup(wifiManager, wifiChannel);
     }
 
     @OnClick(R.id.iv_watch)
     void onWatchClick() {
         initBroadcastReceiver();
-        watchPresenterImpl.discoverWifiPeers(wifiManager, wifiChannel);
+        watchPresenter.discoverWifiPeers(wifiManager, wifiChannel);
     }
 
     private void initBroadcastReceiver() {
@@ -273,5 +280,10 @@ public class MainActivity extends BaseActivity implements WatchView {
     @Override
     public void listPeers() {
         // TODO Dialog with peer list?
+    }
+
+    @Override
+    public void acceptPeers() {
+
     }
 }
