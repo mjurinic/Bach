@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Spacings -->
     <dimen name="large_spacing">32dp</dimen>
+
+    <!-- Separators -->
+    <dimen name="separator_invisible">-2dp</dimen>
+    <dimen name="separator_visible">0dp</dimen>
+    <dimen name="separator_stroke_width">1dp</dimen>
 </resources>
