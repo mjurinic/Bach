@@ -10,6 +10,8 @@
     <dimen name="app_bar_title_left_padding">16dp</dimen>
 
     <!-- Size -->
+    <dimen name="no_size">0dp</dimen>
+    <dimen name="navigation_bar_size">48dp</dimen>
     <dimen name="app_bar_size_x1">56dp</dimen>
     <dimen name="app_bar_size_x2">112dp</dimen>
     <dimen name="app_bar_size_x3">168dp</dimen>

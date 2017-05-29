@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
+import android.widget.LinearLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ import hr.foi.mjurinic.bach.fragments.WatchFragment;
 import hr.foi.mjurinic.bach.fragments.stream.StreamFragment;
 import hr.foi.mjurinic.bach.utils.adapters.ViewPagerAdapter;
 
-public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
+public class MainActivity extends BaseActivity implements TabLayout.OnTabSelectedListener {
 
     @BindView(R.id.main_view_pager)
     ViewPager mainViewPager;
@@ -33,6 +33,12 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+
+        if (hasNavBar()) {
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(mainTabLayout.getLayoutParams());
+            layoutParams.setMargins(0, 0, 0, convertDpToPx(48));
+            mainTabLayout.setLayoutParams(layoutParams);
+        }
 
         mainTabLayout.addTab(mainTabLayout.newTab().setIcon(R.drawable.watch_tab_selector));
         mainTabLayout.addTab(mainTabLayout.newTab().setIcon(R.drawable.home_tab_selector));

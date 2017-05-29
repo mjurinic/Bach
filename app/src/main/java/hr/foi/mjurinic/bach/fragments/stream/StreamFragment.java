@@ -41,5 +41,14 @@ public class StreamFragment extends Fragment {
 
     public void changeActiveFragment(int position) {
         viewPager.setCurrentItem(position);
+
+        switch (position) {
+            case 1:
+                ((QrFragment) fragments.get(position)).initWifiDirect();
+                break;
+
+            default:
+                break;
+        }
     }
 }

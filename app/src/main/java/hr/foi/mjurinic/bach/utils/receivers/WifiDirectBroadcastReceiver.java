@@ -8,31 +8,29 @@ import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-
-import hr.foi.mjurinic.bach.mvp.presenters.Impl.WatchPresenterImpl;
+import hr.foi.mjurinic.bach.models.WifiHostInformation;
+import hr.foi.mjurinic.bach.mvp.presenters.StreamPresenter;
 
 public class WifiDirectBroadcastReceiver extends BroadcastReceiver {
 
     private static final String TAG = "WifiBroadcastReceiver";
 
-    @Inject
-    WatchPresenterImpl watchPresenterImpl;
-
     private WifiP2pManager manager;
     private WifiP2pManager.Channel channel;
     private List<WifiP2pDevice> peers;
+    private StreamPresenter streamPresenter;
 
-    public WifiDirectBroadcastReceiver(WifiP2pManager manager, WifiP2pManager.Channel channel) {
+    public WifiDirectBroadcastReceiver(WifiP2pManager manager, WifiP2pManager.Channel channel, StreamPresenter streamPresenter) {
         super();
 
         this.manager = manager;
         this.channel = channel;
+        this.streamPresenter = streamPresenter;
+
         peers = new ArrayList<>();
     }
 
@@ -43,7 +41,10 @@ public class WifiDirectBroadcastReceiver extends BroadcastReceiver {
                 manager.requestGroupInfo(channel, new WifiP2pManager.GroupInfoListener() {
                     @Override
                     public void onGroupInfoAvailable(WifiP2pGroup group) {
-                        Log.d(TAG, group.toString());
+                        if (group != null) {
+                            streamPresenter.generateQrCode(
+                                    new WifiHostInformation(group.getNetworkName(), group.getPassphrase(), group.getOwner().deviceAddress));
+                        }
                     }
                 });
 
@@ -60,7 +61,7 @@ public class WifiDirectBroadcastReceiver extends BroadcastReceiver {
                     message = "Wi-Fi P2P NOT enabled.";
                 }
 
-                Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+                Log.d(TAG, message);
 
                 break;
             }

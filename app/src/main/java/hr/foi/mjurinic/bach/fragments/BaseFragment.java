@@ -32,6 +32,7 @@ public class BaseFragment extends Fragment implements BaseView {
     @Override
     public void showError(String message) {
         AlertDialog.Builder dialog = new AlertDialog.Builder(getBaseActivity())
+                .setTitle("Error")
                 .setMessage(message != null ? message : getString(R.string.error_general))
                 .setPositiveButton(android.R.string.ok, null);
 

@@ -17,8 +17,7 @@
     <android.support.design.widget.TabLayout
         android:id="@+id/main_tab_layout"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginBottom="48dp"
+        android:layout_height="@dimen/navigation_bar_size"
         android:background="@android:color/transparent"
         app:tabIndicatorColor="@android:color/transparent"/>
 

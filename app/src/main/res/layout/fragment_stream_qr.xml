@@ -3,6 +3,7 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:background="@android:color/white"
+              xmlns:tools="http://schemas.android.com/tools"
               android:orientation="vertical">
 
     <include
@@ -14,14 +15,34 @@
         android:id="@+id/tv_wifi_direct_instructions"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/wifi_direct_instructions"
-        android:padding="@dimen/default_spacing"/>
+        android:padding="@dimen/default_spacing"
+        android:text="@string/wifi_direct_instructions"/>
 
-    <ImageView
-        android:id="@+id/iv_qr_code"
-        android:layout_width="@dimen/qr_code_size"
-        android:layout_height="@dimen/qr_code_size"
-        android:layout_gravity="center_horizontal"
-        android:layout_margin="@dimen/large_spacing"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:layout_marginBottom="@dimen/navigation_bar_size"
+        android:paddingStart="@dimen/default_spacing"
+        android:paddingEnd="@dimen/default_spacing">
+
+        <ProgressBar
+            android:id="@+id/qr_progress"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:visibility="visible"
+            android:indeterminate="true"/>
+
+        <ImageView
+            android:id="@+id/iv_qr_code"
+            android:layout_width="@dimen/qr_code_size"
+            android:layout_height="@dimen/qr_code_size"
+            android:layout_gravity="center_vertical"
+            tools:background="@android:drawable/ic_dialog_dialer"
+            android:visibility="gone"/>
+    </LinearLayout>
 
 </LinearLayout>

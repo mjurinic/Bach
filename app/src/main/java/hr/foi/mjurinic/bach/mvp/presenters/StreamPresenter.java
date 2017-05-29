@@ -1,5 +1,7 @@
 package hr.foi.mjurinic.bach.mvp.presenters;
 
+import hr.foi.mjurinic.bach.models.WifiHostInformation;
+
 public interface StreamPresenter {
 
     void initWifiDirect();
@@ -8,5 +10,5 @@ public interface StreamPresenter {
 
     void removeWifiP2PGroup();
 
-    void generateQrCode();
+    void generateQrCode(WifiHostInformation wifiHostInformation);
 }
