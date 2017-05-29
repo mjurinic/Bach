@@ -1,5 +1,6 @@
 package hr.foi.mjurinic.bach.fragments.stream;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -14,20 +15,30 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import hr.foi.mjurinic.bach.R;
+import hr.foi.mjurinic.bach.dagger.components.DaggerStreamComponent;
+import hr.foi.mjurinic.bach.dagger.components.StreamComponent;
+import hr.foi.mjurinic.bach.dagger.modules.StreamModule;
+import hr.foi.mjurinic.bach.fragments.BaseFragment;
+import hr.foi.mjurinic.bach.mvp.views.StreamView;
 import hr.foi.mjurinic.bach.utils.adapters.ViewPagerAdapter;
 
-public class StreamFragment extends Fragment {
+public class StreamFragment extends BaseFragment implements StreamView {
 
     @BindView(R.id.stream_view_pager)
     ViewPager viewPager;
 
-    List<Fragment> fragments;
+    private List<Fragment> fragments;
+    private StreamComponent streamComponent;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_stream, container, false);
         ButterKnife.bind(this, view);
+
+        streamComponent = DaggerStreamComponent.builder()
+                .streamModule(new StreamModule(this))
+                .build();
 
         fragments = new ArrayList<>();
         fragments.add(new ConnectionTypeFragment());
@@ -50,5 +61,13 @@ public class StreamFragment extends Fragment {
             default:
                 break;
         }
+    }
+
+    @Override
+    public void showQrCode(Bitmap qrCode) {
+    }
+
+    public StreamComponent getStreamComponent() {
+        return streamComponent;
     }
 }

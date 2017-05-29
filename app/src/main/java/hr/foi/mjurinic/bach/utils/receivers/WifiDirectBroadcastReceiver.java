@@ -24,12 +24,9 @@ public class WifiDirectBroadcastReceiver extends BroadcastReceiver {
     private List<WifiP2pDevice> peers;
     private StreamPresenter streamPresenter;
 
-    public WifiDirectBroadcastReceiver(WifiP2pManager manager, WifiP2pManager.Channel channel, StreamPresenter streamPresenter) {
-        super();
-
+    public WifiDirectBroadcastReceiver(WifiP2pManager manager, WifiP2pManager.Channel channel) {
         this.manager = manager;
         this.channel = channel;
-        this.streamPresenter = streamPresenter;
 
         peers = new ArrayList<>();
     }
@@ -101,4 +98,13 @@ public class WifiDirectBroadcastReceiver extends BroadcastReceiver {
             }
         }
     };
+
+    /**
+     * Manually update StreamPresenter because StreamView instance can change.
+     *
+     * @param streamPresenter
+     */
+    public void setStreamPresenter(StreamPresenter streamPresenter) {
+        this.streamPresenter = streamPresenter;
+    }
 }

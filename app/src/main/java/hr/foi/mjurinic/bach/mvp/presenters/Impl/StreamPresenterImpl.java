@@ -1,8 +1,6 @@
 package hr.foi.mjurinic.bach.mvp.presenters.Impl;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.support.v4.content.res.ResourcesCompat;
@@ -14,13 +12,13 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 
+import javax.inject.Inject;
+
+import hr.foi.mjurinic.bach.BachApp;
 import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.models.WifiHostInformation;
 import hr.foi.mjurinic.bach.mvp.presenters.StreamPresenter;
 import hr.foi.mjurinic.bach.mvp.views.StreamView;
-import hr.foi.mjurinic.bach.utils.receivers.WifiDirectBroadcastReceiver;
-
-import static android.os.Looper.getMainLooper;
 
 public class StreamPresenterImpl implements StreamPresenter {
 
@@ -30,30 +28,14 @@ public class StreamPresenterImpl implements StreamPresenter {
     private Context context;
     private WifiP2pManager wifiManager;
     private WifiP2pManager.Channel wifiChannel;
-    private BroadcastReceiver wifiBroadcastReceiver;
-    private IntentFilter intentFilter;
 
+    @Inject
     public StreamPresenterImpl(StreamView streamView, Context context) {
         this.streamView = streamView;
         this.context = context;
-    }
 
-    @Override
-    public void initWifiDirect() {
-        if (wifiBroadcastReceiver != null) return;
-
-        wifiManager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
-        wifiChannel = wifiManager.initialize(context, getMainLooper(), null);
-        wifiBroadcastReceiver = new WifiDirectBroadcastReceiver(wifiManager, wifiChannel, this);
-
-        intentFilter = new IntentFilter();
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-
-        context.registerReceiver(wifiBroadcastReceiver, intentFilter);
-
-        Log.d(TAG, "Wi-Fi Peer-to-Peer initialized!");
+        wifiManager = BachApp.getInstance().getManager();
+        wifiChannel = BachApp.getInstance().getChannel();
     }
 
     @Override
@@ -91,6 +73,11 @@ public class StreamPresenterImpl implements StreamPresenter {
     @Override
     public void generateQrCode(WifiHostInformation wifiHostInformation) {
         streamView.showQrCode(encodeAsBitmap(wifiHostInformation));
+    }
+
+    @Override
+    public void updateView(StreamView streamView) {
+        this.streamView = streamView;
     }
 
     private Bitmap encodeAsBitmap(WifiHostInformation wifiHostInformation) {

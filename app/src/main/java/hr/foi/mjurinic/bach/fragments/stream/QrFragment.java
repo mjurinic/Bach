@@ -10,11 +10,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import hr.foi.mjurinic.bach.BachApp;
 import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
-import hr.foi.mjurinic.bach.mvp.presenters.Impl.StreamPresenterImpl;
 import hr.foi.mjurinic.bach.mvp.presenters.StreamPresenter;
 import hr.foi.mjurinic.bach.mvp.views.StreamView;
 
@@ -31,16 +33,21 @@ public class QrFragment extends BaseFragment implements StreamView {
     @BindView(R.id.qr_progress)
     ProgressBar progressBar;
 
+    @Inject
     StreamPresenter streamPresenter;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_stream_qr, container, false);
-        streamPresenter = new StreamPresenterImpl(this, getBaseActivity().getApplicationContext());
 
         ButterKnife.bind(this, view);
+        ((StreamFragment) getParentFragment()).getStreamComponent().inject(this);
+
         toolbar.setTitle("Waiting for Connection");
+        streamPresenter.updateView(this);
+
+        BachApp.getInstance().getWifiDirectBroadcastReceiver().setStreamPresenter(streamPresenter);
 
         return view;
     }
@@ -60,7 +67,7 @@ public class QrFragment extends BaseFragment implements StreamView {
     }
 
     public void initWifiDirect() {
-        streamPresenter.initWifiDirect();
+        BachApp.getInstance().registerWifiDirectBroadcastReceiver();
         streamPresenter.createWifiP2PGroup();
     }
 }

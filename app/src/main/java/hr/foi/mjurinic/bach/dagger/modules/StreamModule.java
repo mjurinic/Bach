@@ -21,7 +21,7 @@ public class StreamModule {
     }
 
     @Provides
-    public StreamPresenter providesStreamPresenter(StreamPresenterImpl streamPresenter) {
-        return streamPresenter;
+    public StreamPresenter providesStreamPresenter(StreamPresenterImpl presenter) {
+        return presenter;
     }
 }
