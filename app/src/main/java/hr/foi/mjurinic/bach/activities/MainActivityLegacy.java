@@ -26,11 +26,9 @@ import butterknife.OnClick;
 import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.mvp.presenters.Impl.StreamPresenterImpl;
 import hr.foi.mjurinic.bach.mvp.presenters.Impl.WatchPresenterImpl;
-import hr.foi.mjurinic.bach.mvp.views.StreamView;
-import hr.foi.mjurinic.bach.mvp.views.WatchView;
 import hr.foi.mjurinic.bach.utils.views.CameraPreviewSurfaceView;
 
-public class MainActivityLegacy extends BaseActivity implements WatchView, StreamView {
+public class MainActivityLegacy extends BaseActivity {
 
     private static final int PERMISSION_REQUEST_CAMERA = 0;
 
@@ -146,7 +144,7 @@ public class MainActivityLegacy extends BaseActivity implements WatchView, Strea
     @OnClick(R.id.iv_broadcast)
     void onBroadcastClick() {
         initBroadcastReceiver();
-        streamPresenter.createWifiP2PGroup(wifiManager, wifiChannel);
+//        streamPresenter.createWifiP2PGroup(wifiManager, wifiChannel);
     }
 
     @OnClick(R.id.iv_watch)
@@ -267,15 +265,5 @@ public class MainActivityLegacy extends BaseActivity implements WatchView, Strea
             camera.release();
             camera = null;
         }
-    }
-
-    @Override
-    public void listPeers() {
-        // TODO Dialog with peer list?
-    }
-
-    @Override
-    public void acceptPeers() {
-
     }
 }

@@ -1,7 +1,9 @@
 <resources>
     <string name="app_name">Bach</string>
     <string name="error_general">An error occured.</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="next">next</string>
+    <string name="wi_fi_peer_to_peer">Wi-Fi Peer-to-Peer</string>
+    <string name="internet">Internet</string>
+    <string name="wifi_direct_instructions">Waiting for peer to connect.\n\nStream will start automatically after a successful QR
+        code scan by the peer device.</string>
 </resources>

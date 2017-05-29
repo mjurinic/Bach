@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<android.support.v7.widget.Toolbar
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/toolbar_primary_color"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/app_bar_size_x1"
+    android:background="@color/colorPrimary"
+    android:gravity="bottom"
+    android:paddingBottom="@dimen/app_bar_title_bottom_padding"
+    android:paddingLeft="@dimen/app_bar_title_left_padding"
+    app:titleTextColor="@android:color/white"/>

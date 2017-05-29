@@ -13,8 +13,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.fragments.HomeFragment;
-import hr.foi.mjurinic.bach.fragments.StreamFragment;
 import hr.foi.mjurinic.bach.fragments.WatchFragment;
+import hr.foi.mjurinic.bach.fragments.stream.StreamFragment;
 import hr.foi.mjurinic.bach.utils.adapters.ViewPagerAdapter;
 
 public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {

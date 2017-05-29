@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@android:color/white"
+              android:orientation="vertical">
+
+    <include
+        layout="@layout/layout_toolbar_primary_color"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/app_bar_size_x4"/>
+
+    <TextView
+        android:id="@+id/tv_wifi_direct_instructions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/wifi_direct_instructions"
+        android:padding="@dimen/default_spacing"/>
+
+    <ImageView
+        android:id="@+id/iv_qr_code"
+        android:layout_width="@dimen/qr_code_size"
+        android:layout_height="@dimen/qr_code_size"
+        android:layout_gravity="center_horizontal"
+        android:layout_margin="@dimen/large_spacing"/>
+
+</LinearLayout>

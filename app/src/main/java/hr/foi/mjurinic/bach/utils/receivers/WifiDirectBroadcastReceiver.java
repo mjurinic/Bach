@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -14,7 +15,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import hr.foi.mjurinic.bach.activities.MainActivity;
 import hr.foi.mjurinic.bach.mvp.presenters.Impl.WatchPresenterImpl;
 
 public class WifiDirectBroadcastReceiver extends BroadcastReceiver {
@@ -26,22 +26,30 @@ public class WifiDirectBroadcastReceiver extends BroadcastReceiver {
 
     private WifiP2pManager manager;
     private WifiP2pManager.Channel channel;
-    private MainActivity mainActivity;
     private List<WifiP2pDevice> peers;
 
-    public WifiDirectBroadcastReceiver(WifiP2pManager manager, WifiP2pManager.Channel channel, MainActivity mainActivity) {
+    public WifiDirectBroadcastReceiver(WifiP2pManager manager, WifiP2pManager.Channel channel) {
         super();
 
         this.manager = manager;
         this.channel = channel;
-        this.mainActivity = mainActivity;
-
         peers = new ArrayList<>();
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
         switch (intent.getAction()) {
+            case WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION: {
+                manager.requestGroupInfo(channel, new WifiP2pManager.GroupInfoListener() {
+                    @Override
+                    public void onGroupInfoAvailable(WifiP2pGroup group) {
+                        Log.d(TAG, group.toString());
+                    }
+                });
+
+                break;
+            }
+
             case WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION: {
                 String message;
 

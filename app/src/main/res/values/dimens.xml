@@ -1,7 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Spacings -->
+    <dimen name="small_spacing">8dp</dimen>
+    <dimen name="default_spacing">16dp</dimen>
     <dimen name="large_spacing">32dp</dimen>
+    
+    <!-- Padding -->
+    <dimen name="app_bar_title_bottom_padding">20dp</dimen>
+    <dimen name="app_bar_title_left_padding">16dp</dimen>
+
+    <!-- Size -->
+    <dimen name="app_bar_size_x1">56dp</dimen>
+    <dimen name="app_bar_size_x2">112dp</dimen>
+    <dimen name="app_bar_size_x3">168dp</dimen>
+    <dimen name="app_bar_size_x4">224dp</dimen>
+    <dimen name="qr_code_size">168dp</dimen>
 
     <!-- Separators -->
     <dimen name="separator_invisible">-2dp</dimen>

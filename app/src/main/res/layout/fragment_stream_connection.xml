@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/white"
+                android:orientation="vertical">
+
+    <include
+        layout="@layout/layout_toolbar_primary_color"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/app_bar_size_x4"/>
+
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/toolbar_primary_color"
+        android:padding="@dimen/default_spacing">
+
+        <RadioButton
+            android:id="@+id/radio_wifi_p2p"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/small_spacing"
+            android:text="@string/wi_fi_peer_to_peer"/>
+
+        <RadioButton
+            android:id="@+id/radio_internet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/small_spacing"
+            android:text="@string/internet"/>
+
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/btn_stream_connection_next"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="@dimen/default_spacing"
+        android:background="@color/colorPrimary"
+        android:text="@string/next"
+        android:textColor="@android:color/white"/>
+
+</RelativeLayout>
