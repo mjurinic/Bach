@@ -30,13 +30,24 @@ public class StreamPresenterImpl implements StreamPresenter {
 
     private static final String SERVICE_TYPE = "_bach._udp.";
 
+    @Inject
+    SocketInteractor socketInteractor;
+
     private StreamView streamView;
     private Context context;
     private WifiP2pManager wifiManager;
     private WifiP2pManager.Channel wifiChannel;
+    private Listener<Object> mediaSocketReceiverCallback = new Listener<Object>() {
+        @Override
+        public void onSuccess(Object data) {
 
-    @Inject
-    SocketInteractor socketInteractor;
+        }
+
+        @Override
+        public void onFailure() {
+
+        }
+    };
 
     @Inject
     public StreamPresenterImpl(StreamView streamView, Context context) {
@@ -53,6 +64,8 @@ public class StreamPresenterImpl implements StreamPresenter {
 
         // Called to avoid Wi-Fi P2P "Busy" error.
         removeWifiP2PGroup();
+
+        streamView.updateProgressText("Creating Wi-Fi P2P group...");
 
         wifiManager.createGroup(wifiChannel, new WifiP2pManager.ActionListener() {
             @Override
@@ -93,7 +106,7 @@ public class StreamPresenterImpl implements StreamPresenter {
 
         try {
             String payload = new Gson().toJson(wifiHostInformation);
-            result = new MultiFormatWriter().encode(payload,  BarcodeFormat.QR_CODE, width, height, null);
+            result = new MultiFormatWriter().encode(payload, BarcodeFormat.QR_CODE, width, height, null);
 
             Timber.d(payload);
 
@@ -139,6 +152,8 @@ public class StreamPresenterImpl implements StreamPresenter {
 
         WifiP2pDnsSdServiceInfo serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(wifiHostInformation.getNetworkName(), SERVICE_TYPE, extraInfo);
 
+        streamView.updateProgressText("Initializing local service...");
+
         wifiManager.addLocalService(wifiChannel, serviceInfo, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
@@ -157,6 +172,8 @@ public class StreamPresenterImpl implements StreamPresenter {
     public void initMediaTransport(WifiHostInformation wifiHostInformation) {
         Timber.d("Initializing media transport socket.");
 
+        streamView.updateProgressText("Initializing media transport socket...");
+
         MediaSocket mediaSocket = new MediaSocket();
 
         socketInteractor.startSender(mediaSocket);
@@ -171,18 +188,6 @@ public class StreamPresenterImpl implements StreamPresenter {
 
     }
 
-    private Listener<Object> mediaSocketReceiverCallback = new Listener<Object>() {
-        @Override
-        public void onSuccess(Object data) {
-
-        }
-
-        @Override
-        public void onFailure() {
-
-        }
-    };
-
     private Bitmap encodeAsBitmap(WifiHostInformation wifiHostInformation) {
         BitMatrix result;
 
@@ -193,7 +198,7 @@ public class StreamPresenterImpl implements StreamPresenter {
 
         try {
             String payload = new Gson().toJson(wifiHostInformation);
-            result = new MultiFormatWriter().encode(payload,  BarcodeFormat.QR_CODE, width, height, null);
+            result = new MultiFormatWriter().encode(payload, BarcodeFormat.QR_CODE, width, height, null);
 
             Timber.d(payload);
 

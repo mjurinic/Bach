@@ -18,21 +18,26 @@
         android:padding="@dimen/default_spacing"
         android:text="@string/wifi_direct_instructions"/>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="horizontal"
         android:layout_marginBottom="@dimen/navigation_bar_size"
         android:paddingStart="@dimen/default_spacing"
         android:paddingEnd="@dimen/default_spacing">
+
+        <TextView
+            android:id="@+id/tv_progress_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Initializing components..."
+            android:layout_above="@+id/qr_progress"/>
 
         <ProgressBar
             android:id="@+id/qr_progress"
             style="@style/Widget.AppCompat.ProgressBar.Horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
+            android:layout_centerVertical="true"
             android:visibility="visible"
             android:indeterminate="true"/>
 
@@ -40,9 +45,9 @@
             android:id="@+id/iv_qr_code"
             android:layout_width="@dimen/qr_code_size"
             android:layout_height="@dimen/qr_code_size"
-            android:layout_gravity="center_vertical"
+            android:layout_centerInParent="true"
             tools:background="@android:drawable/ic_dialog_dialer"
             android:visibility="gone"/>
-    </LinearLayout>
+    </RelativeLayout>
 
 </LinearLayout>

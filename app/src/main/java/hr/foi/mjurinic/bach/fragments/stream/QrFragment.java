@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import javax.inject.Inject;
 
@@ -30,6 +31,9 @@ public class QrFragment extends BaseFragment implements StreamView {
 
     @BindView(R.id.qr_progress)
     ProgressBar progressBar;
+
+    @BindView(R.id.tv_progress_text)
+    TextView tvProgressText;
 
     @Inject
     StreamPresenter streamPresenter;
@@ -59,8 +63,14 @@ public class QrFragment extends BaseFragment implements StreamView {
     @Override
     public void showQrCode(Bitmap qrCode) {
         progressBar.setVisibility(View.GONE);
+        tvProgressText.setVisibility(View.GONE);
 
         ivQrCode.setVisibility(View.VISIBLE);
         ivQrCode.setImageBitmap(qrCode);
+    }
+
+    @Override
+    public void updateProgressText(String text) {
+        tvProgressText.setText(text);
     }
 }

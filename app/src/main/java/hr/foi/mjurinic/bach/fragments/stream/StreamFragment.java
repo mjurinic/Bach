@@ -81,6 +81,11 @@ public class StreamFragment extends BaseFragment implements StreamView {
     public void showQrCode(Bitmap qrCode) {
     }
 
+    @Override
+    public void updateProgressText(String text) {
+
+    }
+
     public StreamComponent getStreamComponent() {
         return streamComponent;
     }
