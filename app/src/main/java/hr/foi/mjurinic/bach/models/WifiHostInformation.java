@@ -4,15 +4,17 @@ public class WifiHostInformation {
 
     private String networkName;
     private String passphrase;
-    private String deviceAddress;
+    private String deviceMacAddress;
+    private String deviceIpAddress;
+    private String devicePort;
 
     public WifiHostInformation() {
     }
 
-    public WifiHostInformation(String networkName, String passphrase, String deviceAddress) {
+    public WifiHostInformation(String networkName, String passphrase, String deviceMacAddress) {
         this.networkName = networkName;
         this.passphrase = passphrase;
-        this.deviceAddress = deviceAddress;
+        this.deviceMacAddress = deviceMacAddress;
     }
 
     public String getNetworkName() {
@@ -31,11 +33,27 @@ public class WifiHostInformation {
         this.passphrase = passphrase;
     }
 
-    public String getDeviceAddress() {
-        return deviceAddress;
+    public String getDeviceMacAddress() {
+        return deviceMacAddress;
     }
 
-    public void setDeviceAddress(String deviceAddress) {
-        this.deviceAddress = deviceAddress;
+    public void setDeviceMacAddress(String deviceMacAddress) {
+        this.deviceMacAddress = deviceMacAddress;
+    }
+
+    public String getDeviceIpAddress() {
+        return deviceIpAddress;
+    }
+
+    public void setDeviceIpAddress(String deviceIpAddress) {
+        this.deviceIpAddress = deviceIpAddress;
+    }
+
+    public String getDevicePort() {
+        return devicePort;
+    }
+
+    public void setDevicePort(String devicePort) {
+        this.devicePort = devicePort;
     }
 }

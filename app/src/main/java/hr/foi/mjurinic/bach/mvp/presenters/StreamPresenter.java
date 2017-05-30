@@ -9,7 +9,13 @@ public interface StreamPresenter {
 
     void removeWifiP2PGroup();
 
+    void initLocalService(WifiHostInformation wifiHostInformation);
+
+    void initMediaTransport(WifiHostInformation wifiHostInformation);
+
     void generateQrCode(WifiHostInformation wifiHostInformation);
+
+    void closeOpenConnections();
 
     void updateView(StreamView view);
 }

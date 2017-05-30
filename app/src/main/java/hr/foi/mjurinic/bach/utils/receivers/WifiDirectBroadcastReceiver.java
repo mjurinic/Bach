@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pGroup;
+import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
 
@@ -39,8 +40,20 @@ public class WifiDirectBroadcastReceiver extends BroadcastReceiver {
                     @Override
                     public void onGroupInfoAvailable(WifiP2pGroup group) {
                         if (group != null) {
-                            streamPresenter.generateQrCode(
-                                    new WifiHostInformation(group.getNetworkName(), group.getPassphrase(), group.getOwner().deviceAddress));
+                            final WifiHostInformation wifiHostInformation = new WifiHostInformation();
+
+                            manager.requestConnectionInfo(channel, new WifiP2pManager.ConnectionInfoListener() {
+                                @Override
+                                public void onConnectionInfoAvailable(WifiP2pInfo info) {
+                                    wifiHostInformation.setDeviceIpAddress(info.groupOwnerAddress.getHostAddress());
+                                }
+                            });
+
+                            wifiHostInformation.setNetworkName(group.getNetworkName());
+                            wifiHostInformation.setPassphrase(group.getPassphrase());
+                            wifiHostInformation.setDeviceMacAddress(group.getOwner().deviceAddress);
+
+                            streamPresenter.initMediaTransport(wifiHostInformation);
                         }
                     }
                 });

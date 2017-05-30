@@ -4,14 +4,12 @@ import android.app.Application;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.net.wifi.p2p.WifiP2pManager;
-import android.util.Log;
 
 import hr.foi.mjurinic.bach.dagger.components.DaggerAppComponent;
 import hr.foi.mjurinic.bach.utils.receivers.WifiDirectBroadcastReceiver;
+import timber.log.Timber;
 
 public class BachApp extends Application {
-
-    private static final String TAG = "BachApp";
 
     private static BachApp instance;
 
@@ -27,7 +25,11 @@ public class BachApp extends Application {
         setInstance(this);
         DaggerAppComponent.create().inject(this);
 
-        Log.d(TAG, "Registering intent filter.");
+        if (BuildConfig.DEBUG) {
+            Timber.plant(new Timber.DebugTree());
+        }
+
+        Timber.d("Registering intent filter.");
 
         // init WifiBroadcastReceiver
         manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);

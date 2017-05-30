@@ -12,6 +12,8 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import hr.foi.mjurinic.bach.R;
@@ -19,6 +21,7 @@ import hr.foi.mjurinic.bach.dagger.components.DaggerStreamComponent;
 import hr.foi.mjurinic.bach.dagger.components.StreamComponent;
 import hr.foi.mjurinic.bach.dagger.modules.StreamModule;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
+import hr.foi.mjurinic.bach.mvp.presenters.StreamPresenter;
 import hr.foi.mjurinic.bach.mvp.views.StreamView;
 import hr.foi.mjurinic.bach.utils.adapters.ViewPagerAdapter;
 
@@ -26,6 +29,9 @@ public class StreamFragment extends BaseFragment implements StreamView {
 
     @BindView(R.id.stream_view_pager)
     ViewPager viewPager;
+
+    @Inject
+    StreamPresenter streamPresenter;
 
     private List<Fragment> fragments;
     private StreamComponent streamComponent;
@@ -40,6 +46,8 @@ public class StreamFragment extends BaseFragment implements StreamView {
                 .streamModule(new StreamModule(this))
                 .build();
 
+        streamComponent.inject(this);
+
         fragments = new ArrayList<>();
         fragments.add(new ConnectionTypeFragment());
         fragments.add(new QrFragment());
@@ -50,12 +58,18 @@ public class StreamFragment extends BaseFragment implements StreamView {
         return view;
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        streamPresenter.closeOpenConnections();
+    }
+
     public void changeActiveFragment(int position) {
         viewPager.setCurrentItem(position);
 
         switch (position) {
             case 1:
-                ((QrFragment) fragments.get(position)).initWifiDirect();
+                streamPresenter.createWifiP2PGroup();
                 break;
 
             default:

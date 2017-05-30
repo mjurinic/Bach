@@ -22,8 +22,6 @@ import hr.foi.mjurinic.bach.mvp.views.StreamView;
 
 public class QrFragment extends BaseFragment implements StreamView {
 
-    private static final String TAG = "QrFragment";
-
     @BindView(R.id.toolbar_primary_color)
     Toolbar toolbar;
 
@@ -64,10 +62,5 @@ public class QrFragment extends BaseFragment implements StreamView {
 
         ivQrCode.setVisibility(View.VISIBLE);
         ivQrCode.setImageBitmap(qrCode);
-    }
-
-    public void initWifiDirect() {
-        BachApp.getInstance().registerWifiDirectBroadcastReceiver();
-        streamPresenter.createWifiP2PGroup();
     }
 }

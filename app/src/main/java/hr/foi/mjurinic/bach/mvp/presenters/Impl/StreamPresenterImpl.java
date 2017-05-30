@@ -3,8 +3,8 @@ package hr.foi.mjurinic.bach.mvp.presenters.Impl;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.support.v4.content.res.ResourcesCompat;
-import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.zxing.BarcodeFormat;
@@ -12,22 +12,31 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 
+import java.util.Map;
+
 import javax.inject.Inject;
 
 import hr.foi.mjurinic.bach.BachApp;
 import hr.foi.mjurinic.bach.R;
+import hr.foi.mjurinic.bach.listeners.Listener;
 import hr.foi.mjurinic.bach.models.WifiHostInformation;
+import hr.foi.mjurinic.bach.mvp.interactors.SocketInteractor;
 import hr.foi.mjurinic.bach.mvp.presenters.StreamPresenter;
 import hr.foi.mjurinic.bach.mvp.views.StreamView;
+import hr.foi.mjurinic.bach.network.MediaSocket;
+import timber.log.Timber;
 
 public class StreamPresenterImpl implements StreamPresenter {
 
-    private static final String TAG = "StreamPresenter";
+    private static final String SERVICE_TYPE = "_bach._udp.";
 
     private StreamView streamView;
     private Context context;
     private WifiP2pManager wifiManager;
     private WifiP2pManager.Channel wifiChannel;
+
+    @Inject
+    SocketInteractor socketInteractor;
 
     @Inject
     public StreamPresenterImpl(StreamView streamView, Context context) {
@@ -40,17 +49,20 @@ public class StreamPresenterImpl implements StreamPresenter {
 
     @Override
     public void createWifiP2PGroup() {
+        BachApp.getInstance().registerWifiDirectBroadcastReceiver();
+
+        // Called to avoid Wi-Fi P2P "Busy" error.
         removeWifiP2PGroup();
 
         wifiManager.createGroup(wifiChannel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
-                Log.d(TAG, "Wi-Fi Peer-to-Peer group created.");
+                Timber.d("Wi-Fi Peer-to-Peer group created.");
             }
 
             @Override
             public void onFailure(int reason) {
-                streamView.showError("P2P group creation failed. Retry. " + reason);
+                streamView.showError("P2P group creation failed. Make sure Wi-Fi is on. (" + reason + ")");
             }
         });
     }
@@ -60,25 +72,116 @@ public class StreamPresenterImpl implements StreamPresenter {
         wifiManager.removeGroup(wifiChannel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
-                Log.d(TAG, "Removed Wi-Fi Peer-to-Peer group.");
+                Timber.d("Removed Wi-Fi Peer-to-Peer group.");
             }
 
             @Override
             public void onFailure(int reason) {
-                Log.d(TAG, "Failed to remove Wi-Fi Peer-to-Peer group: " + reason);
+                Timber.d("Failed to remove Wi-Fi Peer-to-Peer group: " + reason);
             }
         });
     }
 
     @Override
     public void generateQrCode(WifiHostInformation wifiHostInformation) {
-        streamView.showQrCode(encodeAsBitmap(wifiHostInformation));
+        BitMatrix result;
+
+        int width = (int) context.getResources().getDimension(R.dimen.qr_code_size);
+        int height = (int) context.getResources().getDimension(R.dimen.qr_code_size);
+        int white = ResourcesCompat.getColor(context.getResources(), android.R.color.white, null);
+        int black = ResourcesCompat.getColor(context.getResources(), android.R.color.black, null);
+
+        try {
+            String payload = new Gson().toJson(wifiHostInformation);
+            result = new MultiFormatWriter().encode(payload,  BarcodeFormat.QR_CODE, width, height, null);
+
+            Timber.d(payload);
+
+            int w = result.getWidth();
+            int h = result.getHeight();
+
+            int[] pixels = new int[w * h];
+
+            for (int y = 0; y < h; y++) {
+                for (int x = 0; x < w; x++) {
+                    pixels[y * w + x] = result.get(x, y) ? black : white;
+                }
+            }
+
+            Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+            bitmap.setPixels(pixels, 0, width, 0, 0, w, h);
+
+            streamView.showQrCode(bitmap);
+
+        } catch (IllegalArgumentException | WriterException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void closeOpenConnections() {
+        socketInteractor.stopReceiver();
+        socketInteractor.stopSender();
     }
 
     @Override
     public void updateView(StreamView streamView) {
         this.streamView = streamView;
     }
+
+    /**
+     * Advertise newly created access point.
+     */
+    @Override
+    public void initLocalService(final WifiHostInformation wifiHostInformation) {
+        Gson gson = new Gson();
+        Map<String, String> extraInfo = gson.fromJson(gson.toJson(wifiHostInformation), Map.class);
+
+        WifiP2pDnsSdServiceInfo serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(wifiHostInformation.getNetworkName(), SERVICE_TYPE, extraInfo);
+
+        wifiManager.addLocalService(wifiChannel, serviceInfo, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Timber.d("New local service created.");
+                generateQrCode(wifiHostInformation);
+            }
+
+            @Override
+            public void onFailure(int reason) {
+                Timber.d("Failed to register new local service. (" + reason + ")");
+            }
+        });
+    }
+
+    @Override
+    public void initMediaTransport(WifiHostInformation wifiHostInformation) {
+        Timber.d("Initializing media transport socket.");
+
+        MediaSocket mediaSocket = new MediaSocket();
+
+        socketInteractor.startSender(mediaSocket);
+        socketInteractor.startReceiver(mediaSocket, mediaSocketReceiverCallback);
+
+        wifiHostInformation.setDevicePort(String.valueOf(mediaSocket.getPort()));
+
+        initLocalService(wifiHostInformation);
+    }
+
+    private void startQoS() {
+
+    }
+
+    private Listener<Object> mediaSocketReceiverCallback = new Listener<Object>() {
+        @Override
+        public void onSuccess(Object data) {
+
+        }
+
+        @Override
+        public void onFailure() {
+
+        }
+    };
 
     private Bitmap encodeAsBitmap(WifiHostInformation wifiHostInformation) {
         BitMatrix result;
@@ -92,7 +195,7 @@ public class StreamPresenterImpl implements StreamPresenter {
             String payload = new Gson().toJson(wifiHostInformation);
             result = new MultiFormatWriter().encode(payload,  BarcodeFormat.QR_CODE, width, height, null);
 
-            Log.d(TAG, payload);
+            Timber.d(payload);
 
             int w = result.getWidth();
             int h = result.getHeight();
