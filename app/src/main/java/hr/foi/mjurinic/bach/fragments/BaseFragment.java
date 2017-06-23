@@ -1,18 +1,25 @@
 package hr.foi.mjurinic.bach.fragments;
 
-import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
-
 import com.afollestad.materialdialogs.MaterialDialog;
 
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
+import android.view.View;
+import android.widget.TextView;
+
+import butterknife.BindView;
 import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.activities.BaseActivity;
 import hr.foi.mjurinic.bach.mvp.views.BaseView;
-import timber.log.Timber;
 
 public class BaseFragment extends Fragment implements BaseView {
 
     private MaterialDialog progressDialog;
+
+    @Nullable
+    @BindView(R.id.tv_watch_connection_progress_text)
+    TextView progressText;
 
     @Override
     public void showProgress(String message) {
@@ -32,8 +39,10 @@ public class BaseFragment extends Fragment implements BaseView {
 
     @Override
     public void updateProgressText(String text) {
-        // Handle manually
-        Timber.d("Base");
+        if (progressText != null) {
+            progressText.setText(text);
+            progressText.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -50,7 +59,7 @@ public class BaseFragment extends Fragment implements BaseView {
 
     @Override
     public void showDialog(String title, String message, MaterialDialog.SingleButtonCallback positiveCallback,
-                           MaterialDialog.SingleButtonCallback negativeCallback, String positiveButtonText, String negativeButtonText) {
+            MaterialDialog.SingleButtonCallback negativeCallback, String positiveButtonText, String negativeButtonText) {
         getBaseActivity().showDialog(title, message, positiveCallback, negativeCallback, positiveButtonText, negativeButtonText);
     }
 
