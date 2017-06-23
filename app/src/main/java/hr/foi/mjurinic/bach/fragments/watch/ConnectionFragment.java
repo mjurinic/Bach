@@ -6,7 +6,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import javax.inject.Inject;
 
@@ -21,9 +20,6 @@ public class ConnectionFragment extends BaseFragment implements WatchView {
 
     @BindView(R.id.toolbar_primary_color)
     Toolbar toolbar;
-
-    @BindView(R.id.tv_watch_connection_progress_text)
-    TextView progressText;
 
     @Inject
     WatchPresenter watchPresenter;
@@ -45,10 +41,5 @@ public class ConnectionFragment extends BaseFragment implements WatchView {
     @Override
     public void updateFrame() {
 
-    }
-
-    @Override
-    public void updateProgressText(String text) {
-        progressText.setText(text);
     }
 }
