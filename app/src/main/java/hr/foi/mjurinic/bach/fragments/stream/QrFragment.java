@@ -20,6 +20,7 @@ import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
 import hr.foi.mjurinic.bach.mvp.presenters.StreamPresenter;
 import hr.foi.mjurinic.bach.mvp.views.StreamView;
+import timber.log.Timber;
 
 public class QrFragment extends BaseFragment implements StreamView {
 
@@ -44,7 +45,7 @@ public class QrFragment extends BaseFragment implements StreamView {
         final View view = inflater.inflate(R.layout.fragment_stream_qr, container, false);
 
         ButterKnife.bind(this, view);
-        ((StreamFragment) getParentFragment()).getStreamComponent().inject(this);
+        ((StreamContainerFragment) getParentFragment()).getStreamComponent().inject(this);
 
         toolbar.setTitle("Waiting for Connection");
         streamPresenter.updateView(this);
@@ -64,13 +65,13 @@ public class QrFragment extends BaseFragment implements StreamView {
     public void showQrCode(Bitmap qrCode) {
         progressBar.setVisibility(View.GONE);
         tvProgressText.setVisibility(View.GONE);
-
         ivQrCode.setVisibility(View.VISIBLE);
         ivQrCode.setImageBitmap(qrCode);
     }
 
     @Override
     public void updateProgressText(String text) {
+        Timber.d("Overridden");
         tvProgressText.setText(text);
     }
 }

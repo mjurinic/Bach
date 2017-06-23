@@ -1,42 +1,65 @@
 package hr.foi.mjurinic.bach.mvp.presenters.Impl;
 
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pManager;
-
-import java.util.ArrayList;
-import java.util.List;
+import android.content.Context;
+import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiManager;
+import android.text.format.Formatter;
 
 import javax.inject.Inject;
 
+import hr.foi.mjurinic.bach.models.WifiHostInformation;
+import hr.foi.mjurinic.bach.mvp.interactors.SocketInteractor;
 import hr.foi.mjurinic.bach.mvp.presenters.WatchPresenter;
 import hr.foi.mjurinic.bach.mvp.views.WatchView;
+import timber.log.Timber;
 
 public class WatchPresenterImpl implements WatchPresenter {
 
-    private static final String TAG = "WatchPresenterImpl";
-
     private WatchView watchView;
-    private List<WifiP2pDevice> peers;
+    private SocketInteractor socketInteractor;
+    private Context context;
+    private WifiManager wifiManager;
+    private int netId;
 
     @Inject
-    public WatchPresenterImpl(WatchView watchView) {
+    public WatchPresenterImpl(WatchView watchView, SocketInteractor socketInteractor, Context context) {
         this.watchView = watchView;
-
-        peers = new ArrayList<>();
+        this.socketInteractor = socketInteractor;
+        this.context = context;
     }
 
     @Override
-    public void discoverWifiPeers(final WifiP2pManager manager, final WifiP2pManager.Channel channel) {
-        manager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
-            @Override
-            public void onSuccess() {
-                // Yay?
-            }
+    public void connectToWifiHost(WifiHostInformation hostInformation) {
+        wifiManager = (WifiManager) context.getSystemService(context.WIFI_SERVICE);
 
-            @Override
-            public void onFailure(int reason) {
-                watchView.showError("[" + reason + "] Unable to list WiFi peers.");
-            }
-        });
+        WifiConfiguration wifiConfiguration = new WifiConfiguration();
+        wifiConfiguration.SSID = String.format("\"%s\"", hostInformation.getNetworkName());
+        wifiConfiguration.preSharedKey = String.format("\"%s\"", hostInformation.getPassphrase());
+
+        watchView.updateProgressText("Connecting to: " + hostInformation.getNetworkName() + "...");
+        Timber.d("Connecting to: " + hostInformation.getNetworkName() + "...");
+
+        netId = wifiManager.addNetwork(wifiConfiguration);
+        wifiManager.enableNetwork(netId, false);
+        wifiManager.reconnect();
+
+        watchView.updateProgressText("Success!");
+
+        // TODO add wifi_change_status thingy and read device ip there if needed
+        Timber.d("Successfully connected to: " + hostInformation.getNetworkName());
+        Timber.d("Device IP: " + Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress()));
+        Timber.d("Link speed: " + wifiManager.getConnectionInfo().getLinkSpeed());
+    }
+
+    @Override
+    public void disconnectWifi() {
+        if (wifiManager != null) {
+            wifiManager.disconnect();
+        }
+    }
+
+    @Override
+    public void updateView(WatchView view) {
+        watchView = view;
     }
 }

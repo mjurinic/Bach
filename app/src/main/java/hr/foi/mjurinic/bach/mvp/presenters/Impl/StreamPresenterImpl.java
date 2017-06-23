@@ -135,11 +135,23 @@ public class StreamPresenterImpl implements StreamPresenter {
     public void closeOpenConnections() {
         socketInteractor.stopReceiver();
         socketInteractor.stopSender();
+
+        wifiManager.removeGroup(wifiChannel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Timber.d("Disconnected from Wi-Fi P2P.");
+            }
+
+            @Override
+            public void onFailure(int reason) {
+                Timber.d("Error disconnecting Wi-Fi P2P.");
+            }
+        });
     }
 
     @Override
-    public void updateView(StreamView streamView) {
-        this.streamView = streamView;
+    public void updateView(StreamView view) {
+        streamView = view;
     }
 
     /**

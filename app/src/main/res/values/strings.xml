@@ -6,4 +6,6 @@
     <string name="internet">Internet</string>
     <string name="wifi_direct_instructions">Waiting for peer connection.\n\nStream will start automatically after a successful QR
         code scan by the peer device.</string>
+    <string name="trying_to_contact_host">Device is trying to connect to the host.\n\nReal-time preview will start after the
+        connection is established.</string>
 </resources>

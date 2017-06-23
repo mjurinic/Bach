@@ -50,7 +50,7 @@ public class ConnectionTypeFragment extends Fragment {
         }
 
         if (nextItemPosition != -1) {
-            ((StreamFragment) getParentFragment()).changeActiveFragment(nextItemPosition);
+            ((StreamContainerFragment) getParentFragment()).changeActiveFragment(nextItemPosition);
         }
     }
 }

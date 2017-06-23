@@ -25,7 +25,7 @@ import hr.foi.mjurinic.bach.mvp.presenters.StreamPresenter;
 import hr.foi.mjurinic.bach.mvp.views.StreamView;
 import hr.foi.mjurinic.bach.utils.adapters.ViewPagerAdapter;
 
-public class StreamFragment extends BaseFragment implements StreamView {
+public class StreamContainerFragment extends BaseFragment implements StreamView {
 
     @BindView(R.id.stream_view_pager)
     ViewPager viewPager;
@@ -59,8 +59,8 @@ public class StreamFragment extends BaseFragment implements StreamView {
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onPause() {
+        super.onPause();
         streamPresenter.closeOpenConnections();
     }
 
@@ -79,11 +79,6 @@ public class StreamFragment extends BaseFragment implements StreamView {
 
     @Override
     public void showQrCode(Bitmap qrCode) {
-    }
-
-    @Override
-    public void updateProgressText(String text) {
-
     }
 
     public StreamComponent getStreamComponent() {

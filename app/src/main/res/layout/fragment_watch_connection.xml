@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@android:color/white"
+              android:orientation="vertical">
+
+    <include
+        layout="@layout/layout_toolbar_primary_color"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/app_bar_size_x4"/>
+
+    <TextView
+        android:id="@+id/tv_wifi_direct_instructions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/default_spacing"
+        android:text="@string/trying_to_contact_host"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/navigation_bar_size"
+        android:paddingEnd="@dimen/default_spacing"
+        android:paddingStart="@dimen/default_spacing">
+
+        <TextView
+            android:id="@+id/tv_watch_connection_progress_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/connection_progress"
+            android:text="Initializing components..."/>
+
+        <ProgressBar
+            android:id="@+id/connection_progress"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:indeterminate="true"
+            android:visibility="visible"/>
+
+    </RelativeLayout>
+
+</LinearLayout>

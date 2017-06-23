@@ -8,6 +8,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.activities.BaseActivity;
 import hr.foi.mjurinic.bach.mvp.views.BaseView;
+import timber.log.Timber;
 
 public class BaseFragment extends Fragment implements BaseView {
 
@@ -27,6 +28,12 @@ public class BaseFragment extends Fragment implements BaseView {
         if (progressDialog != null && progressDialog.isShowing() && !isRemoving()) {
             progressDialog.dismiss();
         }
+    }
+
+    @Override
+    public void updateProgressText(String text) {
+        // Handle manually
+        Timber.d("Base");
     }
 
     @Override

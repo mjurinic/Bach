@@ -8,6 +8,8 @@ public interface BaseView {
 
     void hideProgress();
 
+    void updateProgressText(String text);
+
     void showError(String message);
 
     void showDialog(String title, String message, MaterialDialog.SingleButtonCallback positiveCallback,

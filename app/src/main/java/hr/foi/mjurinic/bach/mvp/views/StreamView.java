@@ -5,6 +5,4 @@ import android.graphics.Bitmap;
 public interface StreamView extends BaseView {
 
     void showQrCode(Bitmap qrCode);
-
-    void updateProgressText(String text);
 }

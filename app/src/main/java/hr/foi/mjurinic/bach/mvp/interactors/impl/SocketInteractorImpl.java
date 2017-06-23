@@ -77,7 +77,10 @@ public class SocketInteractorImpl implements SocketInteractor {
     public void stopSender() {
         Timber.d("Stopping sender thread...");
 
-        outbandQueue.clear();
+        if (outbandQueue != null) {
+            outbandQueue.clear();
+        }
+
         isSenderActive = false;
     }
 
