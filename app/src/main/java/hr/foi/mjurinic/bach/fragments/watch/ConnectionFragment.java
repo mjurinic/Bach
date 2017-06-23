@@ -54,8 +54,14 @@ public class ConnectionFragment extends BaseFragment implements WatchView {
     }
 
     @Override
-    public void updateProgressText(String message) {
+    public void updateProgressText(final String message) {
         Timber.d(message);
-        tvProgressText.setText(message);
+
+        getBaseActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                tvProgressText.setText(message);
+            }
+        });
     }
 }

@@ -79,12 +79,17 @@ public class QrScannerFragment extends BaseFragment {
                     // Idx: 1 -> ConnectionFragment
                     ((WatchContainerFragment) getParentFragment()).changeActiveFragment(1);
 
-                    // TODO properly stop preview and camera
-                    cameraSource.stop();
+                    releaseCamera();
                 }
             }
         });
 
+        initCameraPreview();
+
+        return view;
+    }
+
+    private void initCameraPreview() {
         surfaceView = new SurfaceView(getBaseActivity().getApplicationContext());
         surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
@@ -108,10 +113,28 @@ public class QrScannerFragment extends BaseFragment {
                 cameraSource.stop();
             }
         });
-
         cameraPreview.addView(surfaceView);
+    }
 
-        return view;
+    private void releaseCamera() {
+        if (cameraSource != null) {
+            cameraPreview.removeAllViews();
+            cameraSource.stop();
+
+            Timber.d("Camera preview stopped.");
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        releaseCamera();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        releaseCamera();
     }
 
     public String getBarcodeValue() {
