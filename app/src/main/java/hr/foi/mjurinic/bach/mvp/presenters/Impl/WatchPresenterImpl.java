@@ -26,6 +26,8 @@ public class WatchPresenterImpl implements WatchPresenter {
         this.watchView = watchView;
         this.socketInteractor = socketInteractor;
         this.context = context;
+
+        Timber.d("WatchPresenterImpl created.");
     }
 
     @Override
@@ -37,7 +39,6 @@ public class WatchPresenterImpl implements WatchPresenter {
         wifiConfiguration.preSharedKey = String.format("\"%s\"", hostInformation.getPassphrase());
 
         watchView.updateProgressText("Connecting to: " + hostInformation.getNetworkName() + "...");
-        Timber.d("Connecting to: " + hostInformation.getNetworkName() + "...");
 
         netId = wifiManager.addNetwork(wifiConfiguration);
         wifiManager.enableNetwork(netId, false);

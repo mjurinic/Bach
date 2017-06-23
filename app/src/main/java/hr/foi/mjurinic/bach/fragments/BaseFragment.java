@@ -1,14 +1,10 @@
 package hr.foi.mjurinic.bach.fragments;
 
-import com.afollestad.materialdialogs.MaterialDialog;
-
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
-import android.view.View;
-import android.widget.TextView;
 
-import butterknife.BindView;
+import com.afollestad.materialdialogs.MaterialDialog;
+
 import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.activities.BaseActivity;
 import hr.foi.mjurinic.bach.mvp.views.BaseView;
@@ -16,10 +12,6 @@ import hr.foi.mjurinic.bach.mvp.views.BaseView;
 public class BaseFragment extends Fragment implements BaseView {
 
     private MaterialDialog progressDialog;
-
-    @Nullable
-    @BindView(R.id.tv_watch_connection_progress_text)
-    TextView progressText;
 
     @Override
     public void showProgress(String message) {
@@ -34,14 +26,6 @@ public class BaseFragment extends Fragment implements BaseView {
     public void hideProgress() {
         if (progressDialog != null && progressDialog.isShowing() && !isRemoving()) {
             progressDialog.dismiss();
-        }
-    }
-
-    @Override
-    public void updateProgressText(String text) {
-        if (progressText != null) {
-            progressText.setText(text);
-            progressText.setVisibility(View.VISIBLE);
         }
     }
 

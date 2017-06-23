@@ -64,6 +64,12 @@ public class StreamContainerFragment extends BaseFragment implements StreamView 
         streamPresenter.closeOpenConnections();
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        streamPresenter.closeOpenConnections();
+    }
+
     public void changeActiveFragment(int position) {
         viewPager.setCurrentItem(position);
 
@@ -79,6 +85,11 @@ public class StreamContainerFragment extends BaseFragment implements StreamView 
 
     @Override
     public void showQrCode(Bitmap qrCode) {
+    }
+
+    @Override
+    public void updateProgressText(String message) {
+
     }
 
     public StreamComponent getStreamComponent() {

@@ -9,7 +9,7 @@ import hr.foi.mjurinic.bach.mvp.views.WatchView;
 @Module
 public class WatchModule {
 
-    private WatchView watchView;
+    private final WatchView watchView;
 
     public WatchModule(WatchView watchView) {
         this.watchView = watchView;

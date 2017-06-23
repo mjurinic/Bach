@@ -9,7 +9,7 @@ import hr.foi.mjurinic.bach.mvp.views.StreamView;
 @Module
 public class StreamModule {
 
-    private StreamView streamView;
+    private final StreamView streamView;
 
     public StreamModule(StreamView streamView) {
         this.streamView = streamView;

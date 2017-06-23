@@ -31,11 +31,6 @@ public class BaseActivity extends AppCompatActivity implements BaseView {
     }
 
     @Override
-    public void updateProgressText(String text) {
-        // Handle manually
-    }
-
-    @Override
     public void showError(String message) {
         AlertDialog.Builder dialog = new AlertDialog.Builder(this)
                 .setMessage(message != null ? message : getString(R.string.error_general))

@@ -2,7 +2,6 @@ package hr.foi.mjurinic.bach.fragments.stream;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,8 +12,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import hr.foi.mjurinic.bach.R;
+import hr.foi.mjurinic.bach.fragments.BaseFragment;
 
-public class ConnectionTypeFragment extends Fragment {
+public class ConnectionTypeFragment extends BaseFragment {
 
     @BindView(R.id.toolbar_primary_color)
     Toolbar toolbar;

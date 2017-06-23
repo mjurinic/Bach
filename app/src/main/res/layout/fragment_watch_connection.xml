@@ -25,7 +25,7 @@
         android:paddingStart="@dimen/default_spacing">
 
         <TextView
-            android:id="@+id/tv_watch_connection_progress_text"
+            android:id="@+id/tv_watch_progress_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@+id/connection_progress"

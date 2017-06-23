@@ -15,7 +15,6 @@ import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
-import com.google.gson.Gson;
 
 import java.io.IOException;
 
@@ -25,7 +24,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
-import hr.foi.mjurinic.bach.models.WifiHostInformation;
 import hr.foi.mjurinic.bach.mvp.presenters.WatchPresenter;
 import timber.log.Timber;
 
@@ -43,6 +41,7 @@ public class QrScannerFragment extends BaseFragment {
     private BarcodeDetector barcodeDetector;
     private CameraSource cameraSource;
     private SurfaceView surfaceView;
+    private String barcodeValue;
 
     @Nullable
     @Override
@@ -73,13 +72,12 @@ public class QrScannerFragment extends BaseFragment {
                 SparseArray<Barcode> barcodes = detections.getDetectedItems();
 
                 if (barcodes.size() > 0) {
-                    Timber.d(barcodes.valueAt(0).displayValue);
+                    barcodeValue = barcodes.valueAt(0).displayValue;
+
+                    Timber.d(barcodeValue);
 
                     // Idx: 1 -> ConnectionFragment
                     ((WatchContainerFragment) getParentFragment()).changeActiveFragment(1);
-
-                    watchPresenter.connectToWifiHost(
-                            new Gson().fromJson(barcodes.valueAt(0).displayValue, WifiHostInformation.class));
 
                     // TODO properly stop preview and camera
                     cameraSource.stop();
@@ -114,5 +112,9 @@ public class QrScannerFragment extends BaseFragment {
         cameraPreview.addView(surfaceView);
 
         return view;
+    }
+
+    public String getBarcodeValue() {
+        return barcodeValue;
     }
 }

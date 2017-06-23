@@ -20,7 +20,6 @@ import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
 import hr.foi.mjurinic.bach.mvp.presenters.StreamPresenter;
 import hr.foi.mjurinic.bach.mvp.views.StreamView;
-import timber.log.Timber;
 
 public class QrFragment extends BaseFragment implements StreamView {
 
@@ -33,7 +32,7 @@ public class QrFragment extends BaseFragment implements StreamView {
     @BindView(R.id.qr_progress)
     ProgressBar progressBar;
 
-    @BindView(R.id.tv_progress_text)
+    @BindView(R.id.tv_stream_progress_text)
     TextView tvProgressText;
 
     @Inject
@@ -56,12 +55,6 @@ public class QrFragment extends BaseFragment implements StreamView {
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        streamPresenter.removeWifiP2PGroup();
-    }
-
-    @Override
     public void showQrCode(Bitmap qrCode) {
         progressBar.setVisibility(View.GONE);
         tvProgressText.setVisibility(View.GONE);
@@ -70,8 +63,7 @@ public class QrFragment extends BaseFragment implements StreamView {
     }
 
     @Override
-    public void updateProgressText(String text) {
-        Timber.d("Overridden");
-        tvProgressText.setText(text);
+    public void updateProgressText(String message) {
+        tvProgressText.setText(message);
     }
 }

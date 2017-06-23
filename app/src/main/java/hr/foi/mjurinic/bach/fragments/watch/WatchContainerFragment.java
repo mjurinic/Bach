@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +22,7 @@ import hr.foi.mjurinic.bach.dagger.components.DaggerWatchComponent;
 import hr.foi.mjurinic.bach.dagger.components.WatchComponent;
 import hr.foi.mjurinic.bach.dagger.modules.WatchModule;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
+import hr.foi.mjurinic.bach.models.WifiHostInformation;
 import hr.foi.mjurinic.bach.mvp.presenters.WatchPresenter;
 import hr.foi.mjurinic.bach.mvp.views.WatchView;
 import hr.foi.mjurinic.bach.utils.adapters.ViewPagerAdapter;
@@ -63,8 +66,26 @@ public class WatchContainerFragment extends BaseFragment implements WatchView {
         watchPresenter.disconnectWifi();
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        watchPresenter.disconnectWifi();
+    }
+
     public void changeActiveFragment(int position) {
         viewPager.setCurrentItem(position);
+
+        switch (position) {
+            case 1: {
+                ((ConnectionFragment) fragments.get(1)).init(
+                        new Gson().fromJson(((QrScannerFragment) fragments.get(0)).getBarcodeValue(), WifiHostInformation.class));
+
+                break;
+            }
+
+            default:
+                break;
+        }
     }
 
     public WatchComponent getWatchComponent() {
@@ -73,6 +94,11 @@ public class WatchContainerFragment extends BaseFragment implements WatchView {
 
     @Override
     public void updateFrame() {
+
+    }
+
+    @Override
+    public void updateProgressText(String message) {
 
     }
 }
