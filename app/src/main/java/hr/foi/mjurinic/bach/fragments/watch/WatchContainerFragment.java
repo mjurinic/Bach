@@ -63,13 +63,13 @@ public class WatchContainerFragment extends BaseFragment implements WatchView {
     @Override
     public void onPause() {
         super.onPause();
-        watchPresenter.disconnectWifi();
+        watchPresenter.closeOpenConnections();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        watchPresenter.disconnectWifi();
+        watchPresenter.closeOpenConnections();
     }
 
     public void changeActiveFragment(int position) {

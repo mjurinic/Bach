@@ -59,6 +59,8 @@ public class QrScannerFragment extends BaseFragment {
 
         cameraSource = new CameraSource.Builder(getBaseActivity().getApplicationContext(), barcodeDetector)
                 .setAutoFocusEnabled(true)
+                .setRequestedFps(15)
+                .setRequestedPreviewSize(600, 800)
                 .build();
 
         barcodeDetector.setProcessor(new Detector.Processor<Barcode>() {

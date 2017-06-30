@@ -11,6 +11,7 @@ import java.net.SocketException;
 import java.util.Enumeration;
 
 import hr.foi.mjurinic.bach.helpers.Serializator;
+import hr.foi.mjurinic.bach.models.ReceivedPacket;
 import timber.log.Timber;
 
 public class MediaSocket {
@@ -40,6 +41,8 @@ public class MediaSocket {
         if (data != null) {
             DatagramPacket packet = new DatagramPacket(data, data.length, destinationIp, destinationPort);
 
+            Timber.d("Sending packet to: " + destinationIp.getHostAddress() + ":" + destinationPort);
+
             try {
                 socket.send(packet);
                 return true;
@@ -57,7 +60,7 @@ public class MediaSocket {
     }
 
     @Nullable
-    public Object receive() {
+    public ReceivedPacket receive() {
         byte[] data = new byte[64000];
         DatagramPacket packet = new DatagramPacket(data, data.length);
 
@@ -65,7 +68,9 @@ public class MediaSocket {
             socket.setSoTimeout(TIMEOUT);
             socket.receive(packet);
 
-            return Serializator.deserialize(data);
+            Timber.d("Received packet from: " + packet.getAddress().getHostAddress() + ":" + packet.getPort());
+
+            return new ReceivedPacket(packet.getAddress(),packet.getPort(), Serializator.deserialize(data));
 
         } catch (IOException e) {
             // e.printStackTrace();

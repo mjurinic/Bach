@@ -1,15 +1,16 @@
 package hr.foi.mjurinic.bach.mvp.interactors;
 
-import hr.foi.mjurinic.bach.listeners.Listener;
+import hr.foi.mjurinic.bach.listeners.DataSentListener;
+import hr.foi.mjurinic.bach.listeners.SocketListener;
 import hr.foi.mjurinic.bach.network.MediaSocket;
 
 public interface SocketInteractor {
 
     void startSender(MediaSocket socket);
 
-    void startReceiver(MediaSocket socket, Listener<Object> callback);
+    void startReceiver(MediaSocket socket, SocketListener callback);
 
-    void send(Object obj);
+    void send(Object obj, DataSentListener callback);
 
     void stopSender();
 

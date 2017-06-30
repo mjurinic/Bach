@@ -53,6 +53,10 @@ public class WifiHostInformation {
         return devicePort;
     }
 
+    public int getDevicePortAsInt() {
+        return Integer.parseInt(devicePort);
+    }
+
     public void setDevicePort(String devicePort) {
         this.devicePort = devicePort;
     }

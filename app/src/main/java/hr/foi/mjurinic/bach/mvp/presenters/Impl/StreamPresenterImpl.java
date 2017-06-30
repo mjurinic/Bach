@@ -18,7 +18,12 @@ import javax.inject.Inject;
 
 import hr.foi.mjurinic.bach.BachApp;
 import hr.foi.mjurinic.bach.R;
-import hr.foi.mjurinic.bach.listeners.Listener;
+import hr.foi.mjurinic.bach.listeners.DataSentListener;
+import hr.foi.mjurinic.bach.listeners.SocketListener;
+import hr.foi.mjurinic.bach.models.ReceivedPacket;
+import hr.foi.mjurinic.bach.network.protocol.ProtoMessage;
+import hr.foi.mjurinic.bach.state.HelloState;
+import hr.foi.mjurinic.bach.state.State;
 import hr.foi.mjurinic.bach.models.WifiHostInformation;
 import hr.foi.mjurinic.bach.mvp.interactors.SocketInteractor;
 import hr.foi.mjurinic.bach.mvp.presenters.StreamPresenter;
@@ -26,7 +31,7 @@ import hr.foi.mjurinic.bach.mvp.views.StreamView;
 import hr.foi.mjurinic.bach.network.MediaSocket;
 import timber.log.Timber;
 
-public class StreamPresenterImpl implements StreamPresenter {
+public class StreamPresenterImpl implements StreamPresenter, SocketListener {
 
     private static final String SERVICE_TYPE = "_bach._udp.";
 
@@ -37,17 +42,8 @@ public class StreamPresenterImpl implements StreamPresenter {
     private Context context;
     private WifiP2pManager wifiManager;
     private WifiP2pManager.Channel wifiChannel;
-    private Listener<Object> mediaSocketReceiverCallback = new Listener<Object>() {
-        @Override
-        public void onSuccess(Object data) {
-
-        }
-
-        @Override
-        public void onFailure() {
-
-        }
-    };
+    private State state;
+    private MediaSocket mediaSocket;
 
     @Inject
     public StreamPresenterImpl(StreamView streamView, Context context) {
@@ -56,6 +52,18 @@ public class StreamPresenterImpl implements StreamPresenter {
 
         wifiManager = BachApp.getInstance().getManager();
         wifiChannel = BachApp.getInstance().getChannel();
+    }
+
+    private void startQoS() {
+
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    public MediaSocket getMediaSocket() {
+        return mediaSocket;
     }
 
     @Override
@@ -154,6 +162,11 @@ public class StreamPresenterImpl implements StreamPresenter {
         streamView = view;
     }
 
+    @Override
+    public void sendData(ProtoMessage data, DataSentListener listener) {
+        socketInteractor.send(data, listener);
+    }
+
     /**
      * Advertise newly created access point.
      */
@@ -186,54 +199,40 @@ public class StreamPresenterImpl implements StreamPresenter {
 
         streamView.updateProgressText("Initializing media transport socket...");
 
-        MediaSocket mediaSocket = new MediaSocket();
+        mediaSocket = new MediaSocket();
 
         socketInteractor.startSender(mediaSocket);
-        socketInteractor.startReceiver(mediaSocket, mediaSocketReceiverCallback);
+        socketInteractor.startReceiver(mediaSocket, this);
+
+        setState(new HelloState());
+
+        streamView.updateProgressText("Waiting for clients...");
+        Timber.d("Current state: 'Hello'.");
 
         wifiHostInformation.setDevicePort(String.valueOf(mediaSocket.getPort()));
 
         initLocalService(wifiHostInformation);
     }
 
-    private void startQoS() {
+    /**
+     * Socket callback.
+     *
+     * @param data Instance of ReceivedPacket.
+     */
+    @Override
+    public void onSuccess(ReceivedPacket data) {
+        Timber.d("Received new packet.");
 
+        if (state != null && data.getPayload() instanceof ProtoMessage) {
+            state.process(data, this);
+        }
     }
 
-    private Bitmap encodeAsBitmap(WifiHostInformation wifiHostInformation) {
-        BitMatrix result;
+    /**
+     * Socket callback.
+     */
+    @Override
+    public void onError() {
 
-        int width = (int) context.getResources().getDimension(R.dimen.qr_code_size);
-        int height = (int) context.getResources().getDimension(R.dimen.qr_code_size);
-        int white = ResourcesCompat.getColor(context.getResources(), android.R.color.white, null);
-        int black = ResourcesCompat.getColor(context.getResources(), android.R.color.black, null);
-
-        try {
-            String payload = new Gson().toJson(wifiHostInformation);
-            result = new MultiFormatWriter().encode(payload, BarcodeFormat.QR_CODE, width, height, null);
-
-            Timber.d(payload);
-
-            int w = result.getWidth();
-            int h = result.getHeight();
-
-            int[] pixels = new int[w * h];
-
-            for (int y = 0; y < h; y++) {
-                for (int x = 0; x < w; x++) {
-                    pixels[y * w + x] = result.get(x, y) ? black : white;
-                }
-            }
-
-            Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-            bitmap.setPixels(pixels, 0, width, 0, 0, w, h);
-
-            return bitmap;
-
-        } catch (IllegalArgumentException | WriterException e) {
-            e.printStackTrace();
-        }
-
-        return null;
     }
 }

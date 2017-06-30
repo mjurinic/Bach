@@ -1,7 +1,9 @@
 package hr.foi.mjurinic.bach.mvp.presenters;
 
+import hr.foi.mjurinic.bach.listeners.DataSentListener;
 import hr.foi.mjurinic.bach.models.WifiHostInformation;
 import hr.foi.mjurinic.bach.mvp.views.StreamView;
+import hr.foi.mjurinic.bach.network.protocol.ProtoMessage;
 
 public interface StreamPresenter {
 
@@ -18,4 +20,6 @@ public interface StreamPresenter {
     void closeOpenConnections();
 
     void updateView(StreamView view);
+
+    void sendData(ProtoMessage data, DataSentListener listener);
 }

@@ -1,9 +1,13 @@
 package hr.foi.mjurinic.bach.mvp.interactors.impl;
 
-import java.util.LinkedList;
-import java.util.Queue;
+import android.util.Pair;
 
-import hr.foi.mjurinic.bach.listeners.Listener;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingDeque;
+
+import hr.foi.mjurinic.bach.listeners.DataSentListener;
+import hr.foi.mjurinic.bach.listeners.SocketListener;
+import hr.foi.mjurinic.bach.models.ReceivedPacket;
 import hr.foi.mjurinic.bach.mvp.interactors.SocketInteractor;
 import hr.foi.mjurinic.bach.network.MediaSocket;
 import timber.log.Timber;
@@ -14,21 +18,30 @@ public class SocketInteractorImpl implements SocketInteractor {
     private boolean isSenderActive;
     private Thread receiverThread;
     private boolean isReceiverActive;
-    private Queue<Object> outbandQueue;
+    private Queue<Pair<Object, DataSentListener>> outboundQueue;
 
     @Override
     public void startSender(final MediaSocket socket) {
-        outbandQueue = new LinkedList<>();
+        outboundQueue = new LinkedBlockingDeque<>();
 
         senderThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 while (isSenderActive) {
-                    while (isSenderActive && outbandQueue.isEmpty());
+                    while (isSenderActive && outboundQueue.isEmpty());
 
-                    // In case thread has been interrupted and queue was empty.
-                    if (!outbandQueue.isEmpty()) {
-                        socket.send(outbandQueue.remove());
+                    Timber.d("New outbound data.");
+
+                    // In case thread has been interrupted and queue was not empty.
+                    if (!outboundQueue.isEmpty()) {
+                        Pair<Object, DataSentListener> currItem = outboundQueue.remove();
+
+                        if (socket.send(currItem.first)) {
+                            currItem.second.onSuccess();
+
+                        } else {
+                            currItem.second.onError();
+                        }
                     }
                 }
 
@@ -43,18 +56,18 @@ public class SocketInteractorImpl implements SocketInteractor {
     }
 
     @Override
-    public void startReceiver(final MediaSocket socket, final Listener<Object> callback) {
+    public void startReceiver(final MediaSocket socket, final SocketListener callback) {
         receiverThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 while (isReceiverActive) {
-                    Object response = socket.receive();
+                    ReceivedPacket response = socket.receive();
 
                     if (response != null) {
                         callback.onSuccess(response);
 
                     } else {
-                        callback.onFailure();
+                        callback.onError();
                     }
                 }
 
@@ -69,16 +82,16 @@ public class SocketInteractorImpl implements SocketInteractor {
     }
 
     @Override
-    public void send(Object obj) {
-        outbandQueue.add(obj);
+    public void send(Object obj, DataSentListener listener) {
+        outboundQueue.add(new Pair(obj, listener));
     }
 
     @Override
     public void stopSender() {
         Timber.d("Stopping sender thread...");
 
-        if (outbandQueue != null) {
-            outbandQueue.clear();
+        if (outboundQueue != null) {
+            outboundQueue.clear();
         }
 
         isSenderActive = false;
