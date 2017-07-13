@@ -113,7 +113,7 @@ public class WifiDirectBroadcastReceiver extends BroadcastReceiver {
     };
 
     /**
-     * Manually update StreamPresenter because StreamView instance can change.
+     * Manually update StreamPresenter because BaseStreamView instance can change.
      *
      * @param streamPresenter
      */

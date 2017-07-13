@@ -4,19 +4,19 @@ import dagger.Module;
 import dagger.Provides;
 import hr.foi.mjurinic.bach.mvp.presenters.Impl.StreamPresenterImpl;
 import hr.foi.mjurinic.bach.mvp.presenters.StreamPresenter;
-import hr.foi.mjurinic.bach.mvp.views.StreamView;
+import hr.foi.mjurinic.bach.mvp.views.BaseStreamView;
 
 @Module
 public class StreamModule {
 
-    private final StreamView streamView;
+    private BaseStreamView streamView;
 
-    public StreamModule(StreamView streamView) {
+    public StreamModule(BaseStreamView streamView) {
         this.streamView = streamView;
     }
 
     @Provides
-    public StreamView providesStreamView() {
+    public BaseStreamView providesBaseStreamView() {
         return streamView;
     }
 

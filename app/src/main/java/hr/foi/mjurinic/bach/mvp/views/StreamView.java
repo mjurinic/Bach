@@ -1,10 +1,12 @@
 package hr.foi.mjurinic.bach.mvp.views;
 
-import android.graphics.Bitmap;
+import android.hardware.Camera;
 
-public interface StreamView extends BaseView {
+public interface StreamView extends BaseStreamView {
 
-    void showQrCode(Bitmap qrCode);
+    boolean initCamera(int cameraId);
 
-    void updateProgressText(String message);
+    void showCameraPreview();
+
+    Camera getCamera();
 }

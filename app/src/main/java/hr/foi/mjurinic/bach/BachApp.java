@@ -43,7 +43,7 @@ public class BachApp extends Application {
     }
 
     /**
-     * Called later on by StreamContainerFragment or WatchContainerFragment
+     * Called later on by BaseStreamContainerFragment or WatchContainerFragment
      */
     public void registerWifiDirectBroadcastReceiver() {
         registerReceiver(receiver, intentFilter);

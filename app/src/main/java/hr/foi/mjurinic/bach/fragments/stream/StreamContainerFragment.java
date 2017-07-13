@@ -22,10 +22,10 @@ import hr.foi.mjurinic.bach.dagger.components.StreamComponent;
 import hr.foi.mjurinic.bach.dagger.modules.StreamModule;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
 import hr.foi.mjurinic.bach.mvp.presenters.StreamPresenter;
-import hr.foi.mjurinic.bach.mvp.views.StreamView;
+import hr.foi.mjurinic.bach.mvp.views.BaseStreamView;
 import hr.foi.mjurinic.bach.utils.adapters.ViewPagerAdapter;
 
-public class StreamContainerFragment extends BaseFragment implements StreamView {
+public class StreamContainerFragment extends BaseFragment implements BaseStreamView {
 
     @BindView(R.id.stream_view_pager)
     ViewPager viewPager;
@@ -78,6 +78,9 @@ public class StreamContainerFragment extends BaseFragment implements StreamView 
                 streamPresenter.createWifiP2PGroup();
                 break;
 
+            case 3:
+                break;
+
             default:
                 break;
         }
@@ -89,6 +92,11 @@ public class StreamContainerFragment extends BaseFragment implements StreamView 
 
     @Override
     public void updateProgressText(String message) {
+
+    }
+
+    @Override
+    public void nextFragment() {
 
     }
 

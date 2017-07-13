@@ -28,9 +28,14 @@ public class ProtoMessageType {
     public static final int STREAM_CONFIG_REQUEST = 121;
 
     /**
-     * Response for requested stream configuration.
+     * Response for correct stream configuration request.
      */
-    public static final int STREAM_CONFIG_RESPONSE = 221;
+    public static final int STREAM_CONFIG_RESPONSE_OK = 221;
+
+    /**
+     * Response for wrong stream configuration request.
+     */
+    public static final int STREAM_CONFIG_RESPONSE_ERROR = 222;
 
     /**
      * Client device is ready.

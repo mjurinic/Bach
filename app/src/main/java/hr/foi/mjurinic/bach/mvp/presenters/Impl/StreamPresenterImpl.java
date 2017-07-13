@@ -21,14 +21,15 @@ import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.listeners.DataSentListener;
 import hr.foi.mjurinic.bach.listeners.SocketListener;
 import hr.foi.mjurinic.bach.models.ReceivedPacket;
-import hr.foi.mjurinic.bach.network.protocol.ProtoMessage;
-import hr.foi.mjurinic.bach.state.HelloState;
-import hr.foi.mjurinic.bach.state.State;
 import hr.foi.mjurinic.bach.models.WifiHostInformation;
 import hr.foi.mjurinic.bach.mvp.interactors.SocketInteractor;
 import hr.foi.mjurinic.bach.mvp.presenters.StreamPresenter;
-import hr.foi.mjurinic.bach.mvp.views.StreamView;
+import hr.foi.mjurinic.bach.mvp.views.BaseStreamView;
 import hr.foi.mjurinic.bach.network.MediaSocket;
+import hr.foi.mjurinic.bach.network.protocol.ProtoMessage;
+import hr.foi.mjurinic.bach.network.protocol.ProtoStreamInfo;
+import hr.foi.mjurinic.bach.state.HelloState;
+import hr.foi.mjurinic.bach.state.State;
 import timber.log.Timber;
 
 public class StreamPresenterImpl implements StreamPresenter, SocketListener {
@@ -38,32 +39,21 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
     @Inject
     SocketInteractor socketInteractor;
 
-    private StreamView streamView;
+    private BaseStreamView streamView;
     private Context context;
     private WifiP2pManager wifiManager;
     private WifiP2pManager.Channel wifiChannel;
     private State state;
     private MediaSocket mediaSocket;
+    private ProtoStreamInfo streamInfo;
 
     @Inject
-    public StreamPresenterImpl(StreamView streamView, Context context) {
+    public StreamPresenterImpl(BaseStreamView streamView, Context context) {
         this.streamView = streamView;
         this.context = context;
 
         wifiManager = BachApp.getInstance().getManager();
         wifiChannel = BachApp.getInstance().getChannel();
-    }
-
-    private void startQoS() {
-
-    }
-
-    public void setState(State state) {
-        this.state = state;
-    }
-
-    public MediaSocket getMediaSocket() {
-        return mediaSocket;
     }
 
     @Override
@@ -158,13 +148,18 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
     }
 
     @Override
-    public void updateView(StreamView view) {
+    public void updateView(BaseStreamView view) {
         streamView = view;
     }
 
     @Override
     public void sendData(ProtoMessage data, DataSentListener listener) {
         socketInteractor.send(data, listener);
+    }
+
+    @Override
+    public void nextFragment() {
+        streamView.nextFragment();
     }
 
     /**
@@ -234,5 +229,25 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
     @Override
     public void onError() {
 
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    public MediaSocket getMediaSocket() {
+        return mediaSocket;
+    }
+
+    public BaseStreamView getCurrentView() {
+        return streamView;
+    }
+
+    public ProtoStreamInfo getStreamInfo() {
+        return streamInfo;
+    }
+
+    public void setStreamInfo(ProtoStreamInfo streamInfo) {
+        this.streamInfo = streamInfo;
     }
 }

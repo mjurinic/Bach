@@ -33,6 +33,7 @@ public class HelloState implements State {
                         @Override
                         public void onSuccess() {
                             streamPresenter.setState(new StreamInfoState());
+                            streamPresenter.nextFragment();
                             Timber.d("HelloResponse sent. New state: 'StreamInfoState'");
                         }
 

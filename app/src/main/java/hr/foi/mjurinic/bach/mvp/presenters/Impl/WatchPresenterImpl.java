@@ -20,6 +20,8 @@ import hr.foi.mjurinic.bach.mvp.views.WatchView;
 import hr.foi.mjurinic.bach.network.MediaSocket;
 import hr.foi.mjurinic.bach.network.protocol.ProtoMessage;
 import hr.foi.mjurinic.bach.network.protocol.ProtoMessageType;
+import hr.foi.mjurinic.bach.network.protocol.ProtoStreamConfig;
+import hr.foi.mjurinic.bach.network.protocol.ProtoStreamInfo;
 import hr.foi.mjurinic.bach.state.HelloState;
 import hr.foi.mjurinic.bach.state.State;
 import timber.log.Timber;
@@ -33,6 +35,8 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
     private int netId;
     private State state;
     private int retryCnt;
+    private ProtoStreamInfo streamInfo;
+    private ProtoStreamConfig streamConfig;
 
     @Inject
     public WatchPresenterImpl(WatchView watchView, SocketInteractor socketInteractor, Context context) {
@@ -41,10 +45,6 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
         this.context = context;
 
         Timber.d("WatchPresenterImpl created.");
-    }
-
-    public void setState(State state) {
-        this.state = state;
     }
 
     @Override
@@ -161,5 +161,25 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
     @Override
     public void onError() {
 
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    public ProtoStreamInfo getStreamInfo() {
+        return streamInfo;
+    }
+
+    public void setStreamInfo(ProtoStreamInfo streamInfo) {
+        this.streamInfo = streamInfo;
+    }
+
+    public ProtoStreamConfig getStreamConfig() {
+        return streamConfig;
+    }
+
+    public void setStreamConfig(ProtoStreamConfig streamConfig) {
+        this.streamConfig = streamConfig;
     }
 }

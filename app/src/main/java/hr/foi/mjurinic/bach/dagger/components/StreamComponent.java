@@ -6,8 +6,9 @@ import dagger.Component;
 import hr.foi.mjurinic.bach.dagger.modules.AppContextModule;
 import hr.foi.mjurinic.bach.dagger.modules.SocketInteractorInstanceModule;
 import hr.foi.mjurinic.bach.dagger.modules.StreamModule;
-import hr.foi.mjurinic.bach.fragments.stream.QrFragment;
 import hr.foi.mjurinic.bach.fragments.stream.StreamContainerFragment;
+import hr.foi.mjurinic.bach.fragments.stream.StreamFragment;
+import hr.foi.mjurinic.bach.fragments.stream.QrFragment;
 
 @Component(modules = {
         AppContextModule.class,
@@ -20,4 +21,6 @@ public interface StreamComponent {
     void inject(StreamContainerFragment fragment);
 
     void inject(QrFragment fragment);
+
+    void inject(StreamFragment fragment);
 }

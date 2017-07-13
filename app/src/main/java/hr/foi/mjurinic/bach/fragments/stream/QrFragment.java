@@ -19,9 +19,9 @@ import hr.foi.mjurinic.bach.BachApp;
 import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
 import hr.foi.mjurinic.bach.mvp.presenters.StreamPresenter;
-import hr.foi.mjurinic.bach.mvp.views.StreamView;
+import hr.foi.mjurinic.bach.mvp.views.BaseStreamView;
 
-public class QrFragment extends BaseFragment implements StreamView {
+public class QrFragment extends BaseFragment implements BaseStreamView {
 
     @BindView(R.id.toolbar_primary_color)
     Toolbar toolbar;
@@ -65,5 +65,10 @@ public class QrFragment extends BaseFragment implements StreamView {
     @Override
     public void updateProgressText(String message) {
         tvProgressText.setText(message);
+    }
+
+    @Override
+    public void nextFragment() {
+        ((StreamContainerFragment) getParentFragment()).changeActiveFragment(3);
     }
 }
