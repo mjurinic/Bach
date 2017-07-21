@@ -7,6 +7,7 @@ import android.net.wifi.p2p.WifiP2pManager;
 
 import hr.foi.mjurinic.bach.dagger.components.DaggerAppComponent;
 import hr.foi.mjurinic.bach.utils.receivers.WifiDirectBroadcastReceiver;
+import hr.foi.mjurinic.bach.utils.receivers.WifiWatchBroadcastReceiver;
 import timber.log.Timber;
 
 public class BachApp extends Application {
@@ -16,6 +17,7 @@ public class BachApp extends Application {
     private WifiP2pManager manager;
     private WifiP2pManager.Channel channel;
     private WifiDirectBroadcastReceiver receiver;
+    private WifiWatchBroadcastReceiver watchBroadcastReceiver;
     private IntentFilter intentFilter;
 
     @Override
@@ -49,6 +51,18 @@ public class BachApp extends Application {
         registerReceiver(receiver, intentFilter);
     }
 
+    /**
+     * Handles Wi-Fi connection events in "Watch" mode.
+     */
+    public void registerWifiWatchBroadcastReceiver() {
+        watchBroadcastReceiver = new WifiWatchBroadcastReceiver();
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+
+        registerReceiver(watchBroadcastReceiver, intentFilter);
+    }
+
     public static BachApp getInstance() {
         return instance;
     }
@@ -59,6 +73,10 @@ public class BachApp extends Application {
 
     public WifiDirectBroadcastReceiver getWifiDirectBroadcastReceiver() {
         return receiver;
+    }
+
+    public WifiWatchBroadcastReceiver getWatchBroadcastReceiver() {
+        return watchBroadcastReceiver;
     }
 
     public WifiP2pManager getManager() {

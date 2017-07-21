@@ -70,7 +70,7 @@ public class MediaSocket {
 
             Timber.d("Received packet from: " + packet.getAddress().getHostAddress() + ":" + packet.getPort());
 
-            return new ReceivedPacket(packet.getAddress(),packet.getPort(), Serializator.deserialize(data));
+            return new ReceivedPacket(packet.getAddress(), packet.getPort(), Serializator.deserialize(data));
 
         } catch (IOException e) {
             // e.printStackTrace();
@@ -100,6 +100,7 @@ public class MediaSocket {
     }
 
     public void setDestinationIp(InetAddress destinationIp) {
+        Timber.d("Setting destination IP to: " + destinationIp.getHostAddress());
         this.destinationIp = destinationIp;
     }
 

@@ -2,6 +2,7 @@ package hr.foi.mjurinic.bach.mvp.interactors.impl;
 
 import android.util.Pair;
 
+import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -34,13 +35,18 @@ public class SocketInteractorImpl implements SocketInteractor {
 
                     // In case thread has been interrupted and queue was not empty.
                     if (!outboundQueue.isEmpty()) {
-                        Pair<Object, DataSentListener> currItem = outboundQueue.remove();
+                        try {
+                            Pair<Object, DataSentListener> currItem = outboundQueue.remove();
 
-                        if (socket.send(currItem.first)) {
-                            currItem.second.onSuccess();
+                            if (socket.send(currItem.first)) {
+                                currItem.second.onSuccess();
 
-                        } else {
-                            currItem.second.onError();
+                            } else {
+                                currItem.second.onError();
+                            }
+
+                        } catch (NoSuchElementException e) {
+                            // pass
                         }
                     }
                 }

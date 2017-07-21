@@ -9,7 +9,7 @@ public interface WatchPresenter {
 
     void connectToWifiHost(WifiHostInformation hostInformation);
 
-    void initMediaTransport(WifiHostInformation wifiHostInformation);
+    void initMediaTransport();
 
     void closeOpenConnections();
 

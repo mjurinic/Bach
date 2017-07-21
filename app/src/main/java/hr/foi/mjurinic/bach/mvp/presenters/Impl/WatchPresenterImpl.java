@@ -1,15 +1,17 @@
 package hr.foi.mjurinic.bach.mvp.presenters.Impl;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
-import android.text.format.Formatter;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import javax.inject.Inject;
 
+import hr.foi.mjurinic.bach.BachApp;
 import hr.foi.mjurinic.bach.listeners.DataSentListener;
 import hr.foi.mjurinic.bach.listeners.SocketListener;
 import hr.foi.mjurinic.bach.models.ReceivedPacket;
@@ -37,6 +39,8 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
     private int retryCnt;
     private ProtoStreamInfo streamInfo;
     private ProtoStreamConfig streamConfig;
+    private WifiHostInformation hostInformation;
+    private boolean isConnecting;
 
     @Inject
     public WatchPresenterImpl(WatchView watchView, SocketInteractor socketInteractor, Context context) {
@@ -47,9 +51,26 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
         Timber.d("WatchPresenterImpl created.");
     }
 
+    public boolean isConnected() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if (connectivityManager != null) {
+            return connectivityManager.getActiveNetworkInfo() != null &&
+                    connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED;
+        }
+
+        return false;
+    }
+
     @Override
     public void connectToWifiHost(WifiHostInformation hostInformation) {
+        this.hostInformation = hostInformation;
+
+        BachApp.getInstance().registerWifiWatchBroadcastReceiver();
+        BachApp.getInstance().getWatchBroadcastReceiver().setWatchPresenter(this);
+
         wifiManager = (WifiManager) context.getSystemService(context.WIFI_SERVICE);
+        wifiManager.disconnect(); // Disconnect from current network
 
         WifiConfiguration wifiConfiguration = new WifiConfiguration();
         wifiConfiguration.SSID = String.format("\"%s\"", hostInformation.getNetworkName());
@@ -61,24 +82,30 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
         wifiManager.enableNetwork(netId, false);
         wifiManager.reconnect();
 
-        initMediaTransport(hostInformation);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (!isConnected());
+                initMediaTransport();
+            }
+        }).start();
 
-        // TODO add wifi_change_status thingy and read device ip there if needed
-        Timber.d("Successfully connected to: " + hostInformation.getNetworkName());
-        Timber.d("Device IP: " + Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress()));
-        Timber.d("Link speed: " + wifiManager.getConnectionInfo().getLinkSpeed());
+        // Timber.d("Successfully connected to: " + hostInformation.getNetworkName());
+        // Timber.d("Device IP: " + Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress()));
+        // Timber.d("Link speed: " + wifiManager.getConnectionInfo().getLinkSpeed());
     }
 
     @Override
-    public void initMediaTransport(WifiHostInformation wifiHostInformation) {
+    public void initMediaTransport() {
         Timber.d("Initializing media transport socket.");
 
         watchView.updateProgressText("Initializing media transport socket...");
 
         MediaSocket mediaSocket = new MediaSocket();
+
         try {
-            mediaSocket.setDestinationIp(InetAddress.getByName(wifiHostInformation.getDeviceIpAddress()));
-            mediaSocket.setDestinationPort(wifiHostInformation.getDevicePortAsInt());
+            mediaSocket.setDestinationIp(InetAddress.getByName(hostInformation.getDeviceIpAddress()));
+            mediaSocket.setDestinationPort(hostInformation.getDevicePortAsInt());
 
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -181,5 +208,13 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
 
     public void setStreamConfig(ProtoStreamConfig streamConfig) {
         this.streamConfig = streamConfig;
+    }
+
+    public boolean isConnecting() {
+        return isConnecting;
+    }
+
+    public void setConnecting(boolean connecting) {
+        isConnecting = connecting;
     }
 }
