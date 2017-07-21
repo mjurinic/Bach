@@ -196,7 +196,9 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
 
         mediaSocket = new MediaSocket();
 
-        socketInteractor.startSender(mediaSocket);
+        // stara referenca LOL, ne updatea se kurac iz HelloState
+        // Update: Sad se starta sender thread u HelloStateu (i izgleda da radi)
+        // socketInteractor.startSender(mediaSocket);
         socketInteractor.startReceiver(mediaSocket, this);
 
         setState(new HelloState());
@@ -249,5 +251,9 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
 
     public void setStreamInfo(ProtoStreamInfo streamInfo) {
         this.streamInfo = streamInfo;
+    }
+
+    public SocketInteractor getSocketInteractor() {
+        return socketInteractor;
     }
 }

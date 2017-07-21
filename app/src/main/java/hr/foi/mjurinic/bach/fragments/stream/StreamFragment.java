@@ -16,7 +16,6 @@ import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import hr.foi.mjurinic.bach.BachApp;
 import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
 import hr.foi.mjurinic.bach.mvp.presenters.StreamPresenter;
@@ -28,7 +27,7 @@ public class StreamFragment extends BaseFragment implements StreamView {
     @BindView(R.id.toolbar_primary_color)
     Toolbar toolbar;
 
-    @BindView(R.id.tv_stream_progress_text)
+    @BindView(R.id.tv_watch_progress_text)
     TextView tvProgressText;
 
     @BindView(R.id.streamer_camera_preview)
@@ -57,7 +56,7 @@ public class StreamFragment extends BaseFragment implements StreamView {
         toolbar.setTitle("Initializing stream...");
         streamPresenter.updateView(this);
 
-        BachApp.getInstance().getWifiDirectBroadcastReceiver().setStreamPresenter(streamPresenter);
+        // BachApp.getInstance().getWifiDirectBroadcastReceiver().setStreamPresenter(streamPresenter);
 
         return view;
     }

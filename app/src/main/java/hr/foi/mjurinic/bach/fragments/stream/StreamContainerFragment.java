@@ -51,6 +51,7 @@ public class StreamContainerFragment extends BaseFragment implements BaseStreamV
         fragments = new ArrayList<>();
         fragments.add(new ConnectionTypeFragment());
         fragments.add(new QrFragment());
+        fragments.add(new StreamFragment());
 
         viewPager.setAdapter(new ViewPagerAdapter(getChildFragmentManager(), fragments));
         viewPager.setCurrentItem(0);
@@ -78,7 +79,7 @@ public class StreamContainerFragment extends BaseFragment implements BaseStreamV
                 streamPresenter.createWifiP2PGroup();
                 break;
 
-            case 3:
+            case 2:
                 break;
 
             default:

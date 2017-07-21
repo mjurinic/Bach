@@ -46,7 +46,7 @@ public class ConnectionTypeFragment extends BaseFragment {
         }
 
         if (radioInternet.isChecked()) {
-            nextItemPosition = 2;
+            nextItemPosition = -1; // TODO update
         }
 
         if (nextItemPosition != -1) {

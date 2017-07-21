@@ -20,6 +20,7 @@ import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
 import hr.foi.mjurinic.bach.mvp.presenters.StreamPresenter;
 import hr.foi.mjurinic.bach.mvp.views.BaseStreamView;
+import timber.log.Timber;
 
 public class QrFragment extends BaseFragment implements BaseStreamView {
 
@@ -56,6 +57,8 @@ public class QrFragment extends BaseFragment implements BaseStreamView {
 
     @Override
     public void showQrCode(Bitmap qrCode) {
+        Timber.d("EYYYYY");
+
         progressBar.setVisibility(View.GONE);
         tvProgressText.setVisibility(View.GONE);
         ivQrCode.setVisibility(View.VISIBLE);
@@ -69,6 +72,11 @@ public class QrFragment extends BaseFragment implements BaseStreamView {
 
     @Override
     public void nextFragment() {
-        ((StreamContainerFragment) getParentFragment()).changeActiveFragment(3);
+        getBaseActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((StreamContainerFragment) getParentFragment()).changeActiveFragment(2);
+            }
+        });
     }
 }

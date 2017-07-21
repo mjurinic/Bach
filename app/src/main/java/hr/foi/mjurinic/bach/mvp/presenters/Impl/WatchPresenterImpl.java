@@ -51,7 +51,7 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
         Timber.d("WatchPresenterImpl created.");
     }
 
-    public boolean isConnected() {
+    private boolean isConnected() {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         if (connectivityManager != null) {

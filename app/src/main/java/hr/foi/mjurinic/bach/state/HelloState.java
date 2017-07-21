@@ -30,6 +30,7 @@ public class HelloState implements State {
 
                     streamPresenter.getMediaSocket().setDestinationIp(data.getSenderIp());
                     streamPresenter.getMediaSocket().setDestinationPort(data.getSenderPort());
+                    streamPresenter.getSocketInteractor().startSender(streamPresenter.getMediaSocket());
 
                     streamPresenter.sendData(helloResponse, new DataSentListener() {
                         @Override
