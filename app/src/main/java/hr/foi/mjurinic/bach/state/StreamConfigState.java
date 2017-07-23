@@ -1,8 +1,9 @@
 package hr.foi.mjurinic.bach.state;
 
-import android.hardware.Camera;
+import java.util.Arrays;
 
 import hr.foi.mjurinic.bach.listeners.DataSentListener;
+import hr.foi.mjurinic.bach.models.CameraSize;
 import hr.foi.mjurinic.bach.models.ReceivedPacket;
 import hr.foi.mjurinic.bach.mvp.presenters.Impl.StreamPresenterImpl;
 import hr.foi.mjurinic.bach.mvp.presenters.Impl.WatchPresenterImpl;
@@ -32,10 +33,17 @@ public class StreamConfigState implements State {
                     ProtoStreamConfig streamConfigRequest = (ProtoStreamConfig) payload;
                     retryCnt = 0;
 
-                    for (Camera.Size resolution : streamPresenter.getStreamInfo().getResolutions()) {
+                    Timber.d("Requested resolution: " + streamConfigRequest.getResolution().getWidth() + "x" + streamConfigRequest
+                            .getResolution().getHeight());
+
+                    Timber.d("Requested FPS: " + streamConfigRequest.getFpsRange()[0] + " - " + streamConfigRequest.getFpsRange()[1]);
+
+                    for (CameraSize resolution : streamPresenter.getStreamInfo().getResolutions()) {
                         if (resolution.equals(streamConfigRequest.getResolution())) {
                             for (int[] fpsRange : streamPresenter.getStreamInfo().getSupportedFpsRange()) {
-                                if (fpsRange.equals(streamConfigRequest.getFpsRange())) {
+                                Timber.d(fpsRange.toString() + " ][ " + streamConfigRequest.getFpsRange().toString());
+
+                                if (Arrays.equals(fpsRange, streamConfigRequest.getFpsRange())) {
                                     checkConfig = true;
                                     break;
                                 }

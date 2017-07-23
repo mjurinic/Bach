@@ -5,6 +5,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
+import android.text.format.Formatter;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -34,13 +35,13 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
     private SocketInteractor socketInteractor;
     private Context context;
     private WifiManager wifiManager;
-    private int netId;
     private State state;
+
+    private int netId;
     private int retryCnt;
+
     private ProtoStreamInfo streamInfo;
     private ProtoStreamConfig streamConfig;
-    private WifiHostInformation hostInformation;
-    private boolean isConnecting;
 
     @Inject
     public WatchPresenterImpl(WatchView watchView, SocketInteractor socketInteractor, Context context) {
@@ -55,17 +56,15 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         if (connectivityManager != null) {
-            return connectivityManager.getActiveNetworkInfo() != null &&
-                    connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED;
+            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+            return networkInfo != null && networkInfo.getState() == NetworkInfo.State.CONNECTED;
         }
 
         return false;
     }
 
     @Override
-    public void connectToWifiHost(WifiHostInformation hostInformation) {
-        this.hostInformation = hostInformation;
-
+    public void connectToWifiHost(final WifiHostInformation hostInformation) {
         BachApp.getInstance().registerWifiWatchBroadcastReceiver();
         BachApp.getInstance().getWatchBroadcastReceiver().setWatchPresenter(this);
 
@@ -85,18 +84,19 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                while (!isConnected());
-                initMediaTransport();
+                while (!isConnected()) ;
+
+                initMediaTransport(hostInformation);
+
+                Timber.d("Successfully connected to: " + hostInformation.getNetworkName());
+                Timber.d("Device IP: " + Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress()));
+                Timber.d("Link speed: " + wifiManager.getConnectionInfo().getLinkSpeed());
             }
         }).start();
-
-        // Timber.d("Successfully connected to: " + hostInformation.getNetworkName());
-        // Timber.d("Device IP: " + Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress()));
-        // Timber.d("Link speed: " + wifiManager.getConnectionInfo().getLinkSpeed());
     }
 
     @Override
-    public void initMediaTransport() {
+    public void initMediaTransport(WifiHostInformation hostInformation) {
         Timber.d("Initializing media transport socket.");
 
         watchView.updateProgressText("Initializing media transport socket...");
@@ -133,9 +133,9 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
                 }
 
                 try {
-                    Timber.d("HelloRequest failed. Retrying in 1 seconds.");
+                    Timber.d("HelloRequest failed. Retrying in 2 seconds.");
 
-                    Thread.sleep(1000);
+                    Thread.sleep(2000);
                     retryCnt += 1;
 
                     socketInteractor.send(new ProtoMessage(ProtoMessageType.HELLO_REQUEST), this);
@@ -157,6 +157,7 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
 
         if (wifiManager != null) {
             wifiManager.disconnect();
+            wifiManager.removeNetwork(netId);
         }
     }
 
@@ -208,13 +209,5 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
 
     public void setStreamConfig(ProtoStreamConfig streamConfig) {
         this.streamConfig = streamConfig;
-    }
-
-    public boolean isConnecting() {
-        return isConnecting;
-    }
-
-    public void setConnecting(boolean connecting) {
-        isConnecting = connecting;
     }
 }

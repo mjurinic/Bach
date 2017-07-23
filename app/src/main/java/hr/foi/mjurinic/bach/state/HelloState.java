@@ -25,8 +25,6 @@ public class HelloState implements State {
                     final ProtoMessage helloResponse = new ProtoMessage(ProtoMessageType.HELLO_RESPONSE);
 
                     Timber.d("Received HelloRequest.");
-                    Timber.d("[HELLO_STATE] Sender IP: " + data.getSenderIp().getHostAddress());
-                    Timber.d("[HELLO_STATE] Sender port: " + data.getSenderPort());
 
                     streamPresenter.getMediaSocket().setDestinationIp(data.getSenderIp());
                     streamPresenter.getMediaSocket().setDestinationPort(data.getSenderPort());
@@ -35,9 +33,10 @@ public class HelloState implements State {
                     streamPresenter.sendData(helloResponse, new DataSentListener() {
                         @Override
                         public void onSuccess() {
-                            streamPresenter.setState(new StreamInfoState());
-                            streamPresenter.nextFragment();
                             Timber.d("HelloResponse sent. New state: 'StreamInfoState'");
+
+                            streamPresenter.nextFragment();
+                            streamPresenter.setState(new StreamInfoState());
                         }
 
                         @Override

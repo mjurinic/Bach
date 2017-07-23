@@ -77,9 +77,11 @@ public class StreamContainerFragment extends BaseFragment implements BaseStreamV
         switch (position) {
             case 1:
                 streamPresenter.createWifiP2PGroup();
+                ((QrFragment) fragments.get(1)).updateView();
                 break;
 
             case 2:
+                ((StreamFragment) fragments.get(2)).updateView();
                 break;
 
             default:
@@ -103,5 +105,9 @@ public class StreamContainerFragment extends BaseFragment implements BaseStreamV
 
     public StreamComponent getStreamComponent() {
         return streamComponent;
+    }
+
+    public StreamPresenter getStreamPresenter() {
+        return streamPresenter;
     }
 }

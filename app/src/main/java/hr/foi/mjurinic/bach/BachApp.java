@@ -35,13 +35,12 @@ public class BachApp extends Application {
 
         // init WifiBroadcastReceiver
         manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
-        channel = manager.initialize(BachApp.getInstance().getApplicationContext(), getMainLooper(), null);
+        channel = manager.initialize(getApplicationContext(), getMainLooper(), null);
         receiver = new WifiDirectBroadcastReceiver(manager, channel);
 
         intentFilter = new IntentFilter();
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
     }
 
     /**
