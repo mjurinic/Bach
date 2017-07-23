@@ -1,6 +1,13 @@
 package hr.foi.mjurinic.bach.state;
 
+import android.hardware.Camera;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import hr.foi.mjurinic.bach.fragments.stream.StreamFragment;
 import hr.foi.mjurinic.bach.listeners.DataSentListener;
+import hr.foi.mjurinic.bach.models.CameraSize;
 import hr.foi.mjurinic.bach.models.ReceivedPacket;
 import hr.foi.mjurinic.bach.mvp.presenters.Impl.StreamPresenterImpl;
 import hr.foi.mjurinic.bach.mvp.presenters.Impl.WatchPresenterImpl;
@@ -28,13 +35,20 @@ public class StreamInfoState implements State {
 
                     final StreamPresenterImpl streamPresenter = (StreamPresenterImpl) presenter;
 
-                    if (streamPresenter.getCurrentView() instanceof StreamView) {
+                    Timber.d("[DEBUG] " + streamPresenter.getCurrentView().toString());
+
+                    if (streamPresenter.getCurrentView() instanceof StreamFragment) {
                         StreamView streamView = (StreamView) streamPresenter.getCurrentView();
                         streamView.initCamera(0); // Back camera? TODO Init cameras beforehand.
 
+                        List<CameraSize> resolutions = new ArrayList<>();
+
+                        for (Camera.Size size : streamView.getCamera().getParameters().getSupportedPictureSizes()) {
+                            resolutions.add(new CameraSize(size.width, size.height));
+                        }
+
                         final ProtoMessage streamInfoResponse = new ProtoStreamInfo(
-                                streamView.getCamera().getParameters().getSupportedPictureSizes(),
-                                streamView.getCamera().getParameters().getSupportedPreviewFpsRange()
+                                resolutions, streamView.getCamera().getParameters().getSupportedPreviewFpsRange()
                         );
 
                         streamPresenter.setStreamInfo((ProtoStreamInfo) streamInfoResponse);
@@ -81,6 +95,19 @@ public class StreamInfoState implements State {
 
                     final WatchPresenterImpl watchPresenter = (WatchPresenterImpl) presenter;
                     ProtoStreamInfo streamInfo = (ProtoStreamInfo) payload;
+
+                    Timber.d("Host camera specs received!");
+                    Timber.d("Supported resolutions: ");
+
+                    for (CameraSize size : streamInfo.getResolutions()) {
+                        Timber.d("\t[*] " + size.getWidth() + "x" + size.getHeight());
+                    }
+
+                    Timber.d("Fps range: ");
+
+                    for (int[] fps : streamInfo.getSupportedFpsRange()) {
+                        Timber.d("\t[*] " + fps[0] + " - " + fps[1]);
+                    }
 
                     watchPresenter.setStreamInfo(streamInfo);
 

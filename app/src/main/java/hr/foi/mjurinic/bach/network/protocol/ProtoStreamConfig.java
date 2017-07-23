@@ -1,19 +1,19 @@
 package hr.foi.mjurinic.bach.network.protocol;
 
-import android.hardware.Camera;
+import hr.foi.mjurinic.bach.models.CameraSize;
 
 public class ProtoStreamConfig extends ProtoMessage {
 
-    private Camera.Size resolution;
+    private CameraSize resolution;
     private int[] fpsRange;
 
-    public ProtoStreamConfig(Camera.Size resolution, int[] fpsRange) {
+    public ProtoStreamConfig(CameraSize resolution, int[] fpsRange) {
         super.id = ProtoMessageType.STREAM_CONFIG_REQUEST;
         this.resolution = resolution;
         this.fpsRange = fpsRange;
     }
 
-    public Camera.Size getResolution() {
+    public CameraSize getResolution() {
         return resolution;
     }
 

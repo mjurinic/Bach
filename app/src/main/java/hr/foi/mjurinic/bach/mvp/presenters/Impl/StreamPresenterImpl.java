@@ -46,10 +46,10 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
     private State state;
     private MediaSocket mediaSocket;
     private ProtoStreamInfo streamInfo;
+    private boolean isIniting = true;
 
     @Inject
-    public StreamPresenterImpl(BaseStreamView streamView, Context context) {
-        this.streamView = streamView;
+    public StreamPresenterImpl(Context context) {
         this.context = context;
 
         wifiManager = BachApp.getInstance().getManager();
@@ -131,8 +131,12 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
 
     @Override
     public void closeOpenConnections() {
-        socketInteractor.stopReceiver();
-        socketInteractor.stopSender();
+        isIniting = true;
+
+        if (socketInteractor != null) {
+            socketInteractor.stopReceiver();
+            socketInteractor.stopSender();
+        }
 
         wifiManager.removeGroup(wifiChannel, new WifiP2pManager.ActionListener() {
             @Override
@@ -192,13 +196,11 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
     public void initMediaTransport(WifiHostInformation wifiHostInformation) {
         Timber.d("Initializing media transport socket.");
 
+        isIniting = false;
+
         streamView.updateProgressText("Initializing media transport socket...");
 
         mediaSocket = new MediaSocket();
-
-        // stara referenca LOL, ne updatea se kurac iz HelloState
-        // Update: Sad se starta sender thread u HelloStateu (i izgleda da radi)
-        // socketInteractor.startSender(mediaSocket);
         socketInteractor.startReceiver(mediaSocket, this);
 
         setState(new HelloState());
@@ -255,5 +257,9 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
 
     public SocketInteractor getSocketInteractor() {
         return socketInteractor;
+    }
+
+    public boolean isIniting() {
+        return isIniting;
     }
 }

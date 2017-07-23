@@ -11,8 +11,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import javax.inject.Inject;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import hr.foi.mjurinic.bach.BachApp;
@@ -36,8 +34,7 @@ public class QrFragment extends BaseFragment implements BaseStreamView {
     @BindView(R.id.tv_stream_progress_text)
     TextView tvProgressText;
 
-    @Inject
-    StreamPresenter streamPresenter;
+    private StreamPresenter streamPresenter;
 
     @Nullable
     @Override
@@ -48,6 +45,8 @@ public class QrFragment extends BaseFragment implements BaseStreamView {
         ((StreamContainerFragment) getParentFragment()).getStreamComponent().inject(this);
 
         toolbar.setTitle("Waiting for Connection");
+
+        streamPresenter = ((StreamContainerFragment) getParentFragment()).getStreamPresenter();
         streamPresenter.updateView(this);
 
         BachApp.getInstance().getWifiDirectBroadcastReceiver().setStreamPresenter(streamPresenter);
@@ -57,8 +56,6 @@ public class QrFragment extends BaseFragment implements BaseStreamView {
 
     @Override
     public void showQrCode(Bitmap qrCode) {
-        Timber.d("EYYYYY");
-
         progressBar.setVisibility(View.GONE);
         tvProgressText.setVisibility(View.GONE);
         ivQrCode.setVisibility(View.VISIBLE);
@@ -78,5 +75,13 @@ public class QrFragment extends BaseFragment implements BaseStreamView {
                 ((StreamContainerFragment) getParentFragment()).changeActiveFragment(2);
             }
         });
+    }
+
+    /**
+     * Tells the presenter that this current view is active.
+     */
+    public void updateView() {
+        Timber.d("Update view!");
+        streamPresenter.updateView(this);
     }
 }

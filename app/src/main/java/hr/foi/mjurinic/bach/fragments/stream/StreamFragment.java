@@ -12,8 +12,6 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import javax.inject.Inject;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import hr.foi.mjurinic.bach.R;
@@ -21,6 +19,7 @@ import hr.foi.mjurinic.bach.fragments.BaseFragment;
 import hr.foi.mjurinic.bach.mvp.presenters.StreamPresenter;
 import hr.foi.mjurinic.bach.mvp.views.StreamView;
 import hr.foi.mjurinic.bach.utils.views.CameraPreviewSurfaceView;
+import timber.log.Timber;
 
 public class StreamFragment extends BaseFragment implements StreamView {
 
@@ -36,9 +35,7 @@ public class StreamFragment extends BaseFragment implements StreamView {
     @BindView(R.id.streamer_progress_layout)
     RelativeLayout streamProgressLayout;
 
-    @Inject
-    StreamPresenter streamPresenter;
-
+    private StreamPresenter streamPresenter;
     private Camera camera;
     private CameraPreviewSurfaceView surfaceView;
     private boolean isBackCameraActive;
@@ -54,9 +51,11 @@ public class StreamFragment extends BaseFragment implements StreamView {
         ((StreamContainerFragment) getParentFragment()).getStreamComponent().inject(this);
 
         toolbar.setTitle("Initializing stream...");
+
+        streamPresenter = ((StreamContainerFragment) getParentFragment()).getStreamPresenter();
         streamPresenter.updateView(this);
 
-        // BachApp.getInstance().getWifiDirectBroadcastReceiver().setStreamPresenter(streamPresenter);
+        Timber.d("[STREAM_FRAGMENT] Presenter hash: " + streamPresenter.hashCode());
 
         return view;
     }
@@ -111,5 +110,13 @@ public class StreamFragment extends BaseFragment implements StreamView {
 
     public StreamContainerFragment getContainerFragment() {
         return (StreamContainerFragment) getParentFragment();
+    }
+
+    /**
+     * Tells the presenter that this current view is active.
+     */
+    public void updateView() {
+        Timber.d("Update view!");
+        streamPresenter.updateView(this);
     }
 }

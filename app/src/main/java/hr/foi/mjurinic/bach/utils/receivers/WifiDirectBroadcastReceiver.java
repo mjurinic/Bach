@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
@@ -76,41 +75,10 @@ public class WifiDirectBroadcastReceiver extends BroadcastReceiver {
                 break;
             }
 
-            case WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION: {
-                System.out.println("WIFI_P2P_PEERS_CHANGED_ACTION");
-
-                manager.requestPeers(channel, peerListListener);
-
-                break;
-            }
-
             default:
                 break;
         }
     }
-
-    /**
-     * TODO How to move this to presenter? [PROBLEM] It's null when called.
-     */
-    private WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
-        @Override
-        public void onPeersAvailable(WifiP2pDeviceList peerList) {
-            List<WifiP2pDevice> refreshedPeers = new ArrayList<>(peerList.getDeviceList());
-
-            if (!refreshedPeers.equals(peerList)) {
-                peers.clear();
-                peers.addAll(refreshedPeers);
-
-                for (WifiP2pDevice peer : peers) {
-                    System.out.println(peer.toString());
-                }
-            }
-
-            if (peers.size() == 0) {
-                Log.d(TAG, "No devices found");
-            }
-        }
-    };
 
     /**
      * Manually update StreamPresenter because BaseStreamView instance can change.
