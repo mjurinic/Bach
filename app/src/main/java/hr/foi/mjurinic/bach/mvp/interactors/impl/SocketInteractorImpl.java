@@ -6,11 +6,12 @@ import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import hr.foi.mjurinic.bach.listeners.DataSentListener;
+import hr.foi.mjurinic.bach.listeners.DatagramSentListener;
 import hr.foi.mjurinic.bach.listeners.SocketListener;
 import hr.foi.mjurinic.bach.models.ReceivedPacket;
 import hr.foi.mjurinic.bach.mvp.interactors.SocketInteractor;
 import hr.foi.mjurinic.bach.network.MediaSocket;
+import hr.foi.mjurinic.bach.network.protocol.ProtoMessage;
 import timber.log.Timber;
 
 public class SocketInteractorImpl implements SocketInteractor {
@@ -19,7 +20,7 @@ public class SocketInteractorImpl implements SocketInteractor {
     private boolean isSenderActive;
     private Thread receiverThread;
     private boolean isReceiverActive;
-    private Queue<Pair<Object, DataSentListener>> outboundQueue;
+    private Queue<Pair<Object, DatagramSentListener>> outboundQueue;
 
     @Override
     public void startSender(final MediaSocket socket) {
@@ -36,13 +37,13 @@ public class SocketInteractorImpl implements SocketInteractor {
                     // In case thread has been interrupted and queue was not empty.
                     if (!outboundQueue.isEmpty()) {
                         try {
-                            Pair<Object, DataSentListener> currItem = outboundQueue.remove();
+                            Pair<Object, DatagramSentListener> currItem = outboundQueue.remove();
 
                             if (socket.send(currItem.first)) {
                                 currItem.second.onSuccess();
 
                             } else {
-                                currItem.second.onError();
+                                currItem.second.onError((ProtoMessage) currItem.first);
                             }
 
                         } catch (NoSuchElementException e) {
@@ -70,10 +71,7 @@ public class SocketInteractorImpl implements SocketInteractor {
                     ReceivedPacket response = socket.receive();
 
                     if (response != null) {
-                        callback.onSuccess(response);
-
-                    } else {
-                        callback.onError();
+                        callback.handleDatagram(response);
                     }
                 }
 
@@ -88,7 +86,7 @@ public class SocketInteractorImpl implements SocketInteractor {
     }
 
     @Override
-    public void send(Object obj, DataSentListener listener) {
+    public void send(Object obj, DatagramSentListener listener) {
         outboundQueue.add(new Pair(obj, listener));
     }
 

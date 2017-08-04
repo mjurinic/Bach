@@ -1,8 +1,6 @@
 package hr.foi.mjurinic.bach.mvp.views;
 
-public interface WatchView extends BaseView {
+public interface WatchView {
 
     void updateFrame();
-
-    void updateProgressText(String message);
 }

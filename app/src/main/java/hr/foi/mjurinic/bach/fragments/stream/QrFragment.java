@@ -13,7 +13,6 @@ import android.widget.TextView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import hr.foi.mjurinic.bach.BachApp;
 import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
 import hr.foi.mjurinic.bach.mvp.presenters.StreamPresenter;
@@ -42,16 +41,26 @@ public class QrFragment extends BaseFragment implements BaseStreamView {
         final View view = inflater.inflate(R.layout.fragment_stream_qr, container, false);
 
         ButterKnife.bind(this, view);
-        ((StreamContainerFragment) getParentFragment()).getStreamComponent().inject(this);
+        //((StreamContainerFragment) getParentFragment()).getStreamComponent().inject(this);
 
         toolbar.setTitle("Waiting for Connection");
 
-        streamPresenter = ((StreamContainerFragment) getParentFragment()).getStreamPresenter();
+        //streamPresenter = ((StreamContainerFragment) getParentFragment()).getStreamPresenter();
         streamPresenter.updateView(this);
 
-        BachApp.getInstance().getWifiDirectBroadcastReceiver().setStreamPresenter(streamPresenter);
+        //BachApp.getInstance().getWifiDirectBroadcastReceiver().setStreamPresenter(streamPresenter);
 
         return view;
+    }
+
+    @Override
+    protected int getViewStubLayoutResource() {
+        return R.layout.fragment_stream_qr;
+    }
+
+    @Override
+    protected void onCreateViewAfterViewStubInflated(View inflatedView, Bundle savedInstanceState) {
+        // TODO init logic here
     }
 
     @Override

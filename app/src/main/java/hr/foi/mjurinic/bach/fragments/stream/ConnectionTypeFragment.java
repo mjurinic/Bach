@@ -1,56 +1,211 @@
 package hr.foi.mjurinic.bach.fragments.stream;
 
+import android.content.Context;
+import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.net.wifi.p2p.WifiP2pManager;
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
+import com.google.gson.Gson;
+
+import java.util.Map;
+
+import hr.foi.mjurinic.bach.BachApp;
 import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
+import hr.foi.mjurinic.bach.models.WifiHostInformation;
+import hr.foi.mjurinic.bach.mvp.presenters.ConnectionTypePresenter;
+import hr.foi.mjurinic.bach.mvp.presenters.Impl.ConnectionTypePresenterImpl;
+import hr.foi.mjurinic.bach.mvp.views.ConnectionTypeView;
+import hr.foi.mjurinic.bach.utils.receivers.WifiDirectBroadcastReceiver;
+import timber.log.Timber;
 
-public class ConnectionTypeFragment extends BaseFragment {
+import static android.os.Looper.getMainLooper;
 
-    @BindView(R.id.toolbar_primary_color)
-    Toolbar toolbar;
+public class ConnectionTypeFragment extends BaseFragment implements ConnectionTypeView {
 
-    @BindView(R.id.radio_wifi_p2p)
-    RadioButton radioWifiP2P;
+    private static final String SERVICE_TYPE = "_bach._udp.";
 
-    @BindView(R.id.radio_internet)
-    RadioButton radioInternet;
+    // Views
+    private Button btnNext;
+    private RadioButton radioWifiP2P;
+    private RadioButton radioInternet;
+    private RadioGroup radioGroup;
+    private RelativeLayout qrLayout;
+    private TextView tvProgress;
+    private ImageView ivQrCode;
+    private ProgressBar progressBar;
 
-    @Nullable
+    // Wifi
+    private WifiP2pManager wifiManager;
+    private WifiP2pManager.Channel wifiChannel;
+    private WifiP2pDnsSdServiceInfo serviceInfo;
+    private WifiDirectBroadcastReceiver broadcastReceiver;
+
+    private ConnectionTypePresenter connectionTypePresenter;
+
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_stream_connection, container, false);
-
-        ButterKnife.bind(this, view);
-
-        toolbar.setTitle("Choose Connection Type");
-
-        return view;
+    protected int getViewStubLayoutResource() {
+        return R.layout.fragment_stream_connection;
     }
 
-    @OnClick(R.id.btn_stream_connection_next)
-    void onBtnNextClick() {
-        int nextItemPosition = -1;
+    @Override
+    protected void onCreateViewAfterViewStubInflated(View inflatedView, Bundle savedInstanceState) {
+        Timber.d("ConnectionTypeFragment inflated!");
+        bindViews(inflatedView);
 
-        if (radioWifiP2P.isChecked()) {
-            nextItemPosition = 1;
-        }
+        connectionTypePresenter = new ConnectionTypePresenterImpl(
+                ((StreamContainerFragment) getParentFragment()).getSocketInteractor(), this);
+    }
 
-        if (radioInternet.isChecked()) {
-            nextItemPosition = -1; // TODO update
-        }
+    @Override
+    public void updateProgressText(String progress) {
+        tvProgress.setText(progress);
+    }
 
-        if (nextItemPosition != -1) {
-            ((StreamContainerFragment) getParentFragment()).changeActiveFragment(nextItemPosition);
+    @Override
+    public void advertiseAccessPoint(final WifiHostInformation hostInformation) {
+        Gson gson = new Gson();
+        Map<String, String> extraInfo = gson.fromJson(gson.toJson(hostInformation), Map.class);
+
+        serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(hostInformation.getNetworkName(), SERVICE_TYPE, extraInfo);
+        updateProgressText("Advertising newly created access point...");
+
+        wifiManager.addLocalService(wifiChannel, serviceInfo, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Timber.d("New local service created.");
+                connectionTypePresenter.generateQrCode(hostInformation);
+            }
+
+            @Override
+            public void onFailure(int reason) {
+                Timber.d("Failed to register new local service. (" + reason + ")");
+            }
+        });
+    }
+
+    @Override
+    public void showQrCode(Bitmap qrCode) {
+        // Hide progress
+        progressBar.setVisibility(View.GONE);
+        tvProgress.setVisibility(View.GONE);
+
+        // Show QR code
+        ivQrCode.setVisibility(View.VISIBLE);
+        ivQrCode.setImageBitmap(qrCode);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if (wifiManager != null) {
+            Timber.d("Closing Wi-Fi P2P access point...");
+
+            removeWifiP2PGroup();
+            wifiManager.removeLocalService(wifiChannel, serviceInfo, null);
         }
+    }
+
+    private void removeWifiP2PGroup() {
+        wifiManager.removeGroup(wifiChannel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Timber.d("Removed Wi-Fi P2P group.");
+            }
+
+            @Override
+            public void onFailure(int reason) {
+                Timber.d("Failed to remove Wi-Fi P2P group: " + reason);
+            }
+        });
+    }
+
+    private void createWifiP2PGroup() {
+        // Prevents "Busy" bug
+        removeWifiP2PGroup();
+
+        updateProgressText("Creating Wi-Fi P2P group...");
+
+        wifiManager.createGroup(wifiChannel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Timber.d("Wi-Fi P2P group created.");
+            }
+
+            @Override
+            public void onFailure(int reason) {
+                // streamView.showError("P2P group creation failed. Make sure Wi-Fi is on. (" + reason + ")");
+            }
+        });
+    }
+
+    private void initWifiP2P() {
+        wifiManager = (WifiP2pManager) BachApp.getInstance().getSystemService(Context.WIFI_P2P_SERVICE);
+        wifiChannel = wifiManager.initialize(getBaseActivity().getApplicationContext(), getMainLooper(), null);
+        broadcastReceiver = new WifiDirectBroadcastReceiver(wifiManager, wifiChannel, connectionTypePresenter);
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+
+        BachApp.getInstance().registerReceiver(broadcastReceiver, intentFilter);
+    }
+
+    private void changeView() {
+        // Hide step-1 view
+        radioGroup.setVisibility(View.GONE);
+        btnNext.setVisibility(View.GONE);
+
+        // Show step-2 view
+        qrLayout.setVisibility(View.VISIBLE);
+    }
+
+    private void bindViews(View inflatedView) {
+        radioGroup = (RadioGroup) inflatedView.findViewById(R.id.rg_connection_type);
+        radioWifiP2P = (RadioButton) inflatedView.findViewById(R.id.radio_wifi_p2p);
+        radioInternet = (RadioButton) inflatedView.findViewById(R.id.radio_internet);
+        qrLayout = (RelativeLayout) inflatedView.findViewById(R.id.qr_layout);
+        tvProgress = (TextView) inflatedView.findViewById(R.id.tv_progress);
+        ivQrCode = (ImageView) inflatedView.findViewById(R.id.iv_qr_code);
+        progressBar = (ProgressBar) inflatedView.findViewById(R.id.progress_bar);
+
+        Toolbar toolbar = (Toolbar) inflatedView.findViewById(R.id.toolbar_primary_color);
+        toolbar.setTitle("Choose Connection Type");
+
+        btnNext = (Button) inflatedView.findViewById(R.id.btn_next);
+        btnNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int nextItemPosition = -1;
+
+                if (radioWifiP2P.isChecked()) {
+                    nextItemPosition = 1;
+                }
+
+                if (radioInternet.isChecked()) {
+                    nextItemPosition = -1; // TODO update
+                }
+
+                if (nextItemPosition != -1) {
+                    changeView();
+
+                    if (nextItemPosition == 1) {
+                        initWifiP2P();
+                        createWifiP2PGroup();
+                    }
+                }
+            }
+        });
     }
 }

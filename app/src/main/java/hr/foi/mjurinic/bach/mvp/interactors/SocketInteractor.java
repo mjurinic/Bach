@@ -1,6 +1,6 @@
 package hr.foi.mjurinic.bach.mvp.interactors;
 
-import hr.foi.mjurinic.bach.listeners.DataSentListener;
+import hr.foi.mjurinic.bach.listeners.DatagramSentListener;
 import hr.foi.mjurinic.bach.listeners.SocketListener;
 import hr.foi.mjurinic.bach.network.MediaSocket;
 
@@ -10,7 +10,7 @@ public interface SocketInteractor {
 
     void startReceiver(MediaSocket socket, SocketListener callback);
 
-    void send(Object obj, DataSentListener callback);
+    void send(Object obj, DatagramSentListener callback);
 
     void stopSender();
 

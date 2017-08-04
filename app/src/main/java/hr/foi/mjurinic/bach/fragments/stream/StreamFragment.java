@@ -3,17 +3,12 @@ package hr.foi.mjurinic.bach.fragments.stream;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
 import hr.foi.mjurinic.bach.mvp.presenters.StreamPresenter;
@@ -23,16 +18,16 @@ import timber.log.Timber;
 
 public class StreamFragment extends BaseFragment implements StreamView {
 
-    @BindView(R.id.toolbar_primary_color)
+    //@BindView(R.id.toolbar_primary_color)
     Toolbar toolbar;
 
-    @BindView(R.id.tv_watch_progress_text)
+    //@BindView(R.id.tv_watch_progress_text)
     TextView tvProgressText;
 
-    @BindView(R.id.streamer_camera_preview)
+    //@BindView(R.id.streamer_camera_preview)
     FrameLayout cameraPreview;
 
-    @BindView(R.id.streamer_progress_layout)
+    //@BindView(R.id.streamer_progress_layout)
     RelativeLayout streamProgressLayout;
 
     private StreamPresenter streamPresenter;
@@ -42,24 +37,15 @@ public class StreamFragment extends BaseFragment implements StreamView {
     private int cameraFrontId = -1;
     private int cameraBackId = -1;
 
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.fragment_streamer, container, false);
-
-        ButterKnife.bind(this, view);
-        ((StreamContainerFragment) getParentFragment()).getStreamComponent().inject(this);
-
-        toolbar.setTitle("Initializing stream...");
-
-        streamPresenter = ((StreamContainerFragment) getParentFragment()).getStreamPresenter();
-        streamPresenter.updateView(this);
-
-        Timber.d("[STREAM_FRAGMENT] Presenter hash: " + streamPresenter.hashCode());
-
-        return view;
+    protected int getViewStubLayoutResource() {
+        return R.layout.fragment_streamer;
     }
 
+    @Override
+    protected void onCreateViewAfterViewStubInflated(View inflatedView, Bundle savedInstanceState) {
+        // TODO init logic here
+    }
 
     @Override
     public boolean initCamera(int cameraId) {

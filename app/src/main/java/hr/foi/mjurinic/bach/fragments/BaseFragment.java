@@ -1,50 +1,75 @@
 package hr.foi.mjurinic.bach.fragments;
 
+import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewStub;
 
-import com.afollestad.materialdialogs.MaterialDialog;
-
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.activities.BaseActivity;
-import hr.foi.mjurinic.bach.mvp.views.BaseView;
 
-public class BaseFragment extends Fragment implements BaseView {
+public abstract class BaseFragment extends Fragment {
 
-    private MaterialDialog progressDialog;
+    @BindView(R.id.view_stub_base)
+    ViewStub viewStub;
 
+    private Bundle savedInstanceState;
+    private boolean hasInflated;
+
+    @Nullable
     @Override
-    public void showProgress(String message) {
-        progressDialog = new MaterialDialog.Builder(getBaseActivity())
-                .title("Bach")
-                .content(message)
-                .progress(true, 0)
-                .build();
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_viewstub, container, false);
+        ButterKnife.bind(this, view);
+
+        viewStub.setLayoutResource(getViewStubLayoutResource());
+
+        this.savedInstanceState = savedInstanceState;
+
+        if (getUserVisibleHint() && !hasInflated) {
+            onCreateViewAfterViewStubInflated(viewStub.inflate(), this.savedInstanceState);
+            afterViewStubInflated(view);
+        }
+
+        return view;
+    }
+
+    protected abstract int getViewStubLayoutResource();
+
+    /**
+     * View is attached. Run any initialization here.
+     *
+     * @param inflatedView
+     * @param savedInstanceState
+     */
+    protected abstract void onCreateViewAfterViewStubInflated(View inflatedView, Bundle savedInstanceState);
+
+    protected void afterViewStubInflated(View originalView) {
+        hasInflated = true;
     }
 
     @Override
-    public void hideProgress() {
-        if (progressDialog != null && progressDialog.isShowing() && !isRemoving()) {
-            progressDialog.dismiss();
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+
+        if (isVisibleToUser && viewStub != null && !hasInflated) {
+            onCreateViewAfterViewStubInflated(viewStub.inflate(), savedInstanceState);
+            afterViewStubInflated(getView());
         }
     }
 
+    /**
+     * Orientation changed.
+     */
     @Override
-    public void showError(String message) {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(getBaseActivity())
-                .setTitle("Error")
-                .setMessage(message != null ? message : getString(R.string.error_general))
-                .setPositiveButton(android.R.string.ok, null);
-
-        if (!isRemoving()) {
-            dialog.show();
-        }
-    }
-
-    @Override
-    public void showDialog(String title, String message, MaterialDialog.SingleButtonCallback positiveCallback,
-            MaterialDialog.SingleButtonCallback negativeCallback, String positiveButtonText, String negativeButtonText) {
-        getBaseActivity().showDialog(title, message, positiveCallback, negativeCallback, positiveButtonText, negativeButtonText);
+    public void onDetach() {
+        super.onDetach();
+        hasInflated = false;
     }
 
     protected BaseActivity getBaseActivity() {

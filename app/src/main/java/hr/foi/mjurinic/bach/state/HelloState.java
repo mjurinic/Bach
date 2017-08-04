@@ -1,6 +1,5 @@
 package hr.foi.mjurinic.bach.state;
 
-import hr.foi.mjurinic.bach.listeners.DataSentListener;
 import hr.foi.mjurinic.bach.models.ReceivedPacket;
 import hr.foi.mjurinic.bach.mvp.presenters.Impl.StreamPresenterImpl;
 import hr.foi.mjurinic.bach.mvp.presenters.Impl.WatchPresenterImpl;
@@ -30,35 +29,35 @@ public class HelloState implements State {
                     streamPresenter.getMediaSocket().setDestinationPort(data.getSenderPort());
                     streamPresenter.getSocketInteractor().startSender(streamPresenter.getMediaSocket());
 
-                    streamPresenter.sendData(helloResponse, new DataSentListener() {
-                        @Override
-                        public void onSuccess() {
-                            Timber.d("HelloResponse sent. New state: 'StreamInfoState'");
-
-                            streamPresenter.nextFragment();
-                            streamPresenter.setState(new StreamInfoState());
-                        }
-
-                        @Override
-                        public void onError() {
-                            if (retryCnt == 5) {
-                                Timber.d("Client unreachable.");
-                                return;
-                            }
-
-                            try {
-                                Timber.d("HelloResponse failed. Retrying in 2 seconds.");
-
-                                Thread.sleep(2000);
-                                retryCnt += 1;
-
-                                streamPresenter.sendData(helloResponse, this);
-
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
+//                    streamPresenter.sendData(helloResponse, new DatagramSentListener() {
+//                        @Override
+//                        public void onSuccess() {
+//                            Timber.d("HelloResponse sent. New state: 'StreamInfoState'");
+//
+//                            streamPresenter.nextFragment();
+//                            streamPresenter.setState(new StreamInfoState());
+//                        }
+//
+//                        @Override
+//                        public void onError() {
+//                            if (retryCnt == 5) {
+//                                Timber.d("Client unreachable.");
+//                                return;
+//                            }
+//
+//                            try {
+//                                Timber.d("HelloResponse failed. Retrying in 2 seconds.");
+//
+//                                Thread.sleep(2000);
+//                                retryCnt += 1;
+//
+//                                streamPresenter.sendData(helloResponse, this);
+//
+//                            } catch (InterruptedException e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                    });
                 }
 
                 break;
@@ -71,32 +70,32 @@ public class HelloState implements State {
 
                     Timber.d("Host responded. Transition to 'StreamInfoState'.");
 
-                    watchPresenter.sendData(new ProtoMessage(ProtoMessageType.STREAM_INFO_REQUEST), new DataSentListener() {
-                        @Override
-                        public void onSuccess() {
-                            watchPresenter.setState(new StreamInfoState());
-                        }
-
-                        @Override
-                        public void onError() {
-                            if (retryCnt == 5) {
-                                Timber.d("Unable to contact host device.");
-                                return;
-                            }
-
-                            try {
-                                Timber.d("HelloResponse failed. Retrying in 2 seconds.");
-
-                                Thread.sleep(2000);
-                                retryCnt += 1;
-
-                                watchPresenter.sendData(helloResponse, this);
-
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
+//                    watchPresenter.sendData(new ProtoMessage(ProtoMessageType.STREAM_INFO_REQUEST), new DatagramSentListener() {
+//                        @Override
+//                        public void onSuccess() {
+//                            watchPresenter.setState(new StreamInfoState());
+//                        }
+//
+//                        @Override
+//                        public void onError() {
+//                            if (retryCnt == 5) {
+//                                Timber.d("Unable to contact host device.");
+//                                return;
+//                            }
+//
+//                            try {
+//                                Timber.d("HelloResponse failed. Retrying in 2 seconds.");
+//
+//                                Thread.sleep(2000);
+//                                retryCnt += 1;
+//
+//                                watchPresenter.sendData(helloResponse, this);
+//
+//                            } catch (InterruptedException e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                    });
                 }
 
                 break;

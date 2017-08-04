@@ -2,7 +2,6 @@ package hr.foi.mjurinic.bach.state;
 
 import java.util.Arrays;
 
-import hr.foi.mjurinic.bach.listeners.DataSentListener;
 import hr.foi.mjurinic.bach.models.CameraSize;
 import hr.foi.mjurinic.bach.models.ReceivedPacket;
 import hr.foi.mjurinic.bach.mvp.presenters.Impl.StreamPresenterImpl;
@@ -59,38 +58,38 @@ public class StreamConfigState implements State {
                                     ProtoMessageType.STREAM_CONFIG_RESPONSE_ERROR
                     );
 
-                    streamPresenter.sendData(response, new DataSentListener() {
-                        @Override
-                        public void onSuccess() {
-                            if (configOk) {
-                                Timber.d("StreamConfigResponseOk sent. Next state: StreamState");
-                                // TODO change to StreamState
-
-                            } else {
-                                Timber.d("StreamConfigResponseError sent. Waiting for client correction...");
-                            }
-                        }
-
-                        @Override
-                        public void onError() {
-                            if (retryCnt == 5) {
-                                Timber.d("Client unreachable.");
-                                return;
-                            }
-
-                            try {
-                                Timber.d("StreamConfigResponse failed. Retrying in 2 seconds.");
-
-                                Thread.sleep(2000);
-                                retryCnt += 1;
-
-                                streamPresenter.sendData(response, this);
-
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
+//                    streamPresenter.sendData(response, new DatagramSentListener() {
+//                        @Override
+//                        public void onSuccess() {
+//                            if (configOk) {
+//                                Timber.d("StreamConfigResponseOk sent. Next state: StreamState");
+//                                // TODO change to StreamState
+//
+//                            } else {
+//                                Timber.d("StreamConfigResponseError sent. Waiting for client correction...");
+//                            }
+//                        }
+//
+//                        @Override
+//                        public void onError() {
+//                            if (retryCnt == 5) {
+//                                Timber.d("Client unreachable.");
+//                                return;
+//                            }
+//
+//                            try {
+//                                Timber.d("StreamConfigResponse failed. Retrying in 2 seconds.");
+//
+//                                Thread.sleep(2000);
+//                                retryCnt += 1;
+//
+//                                streamPresenter.sendData(response, this);
+//
+//                            } catch (InterruptedException e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                    });
                 }
 
                 break;

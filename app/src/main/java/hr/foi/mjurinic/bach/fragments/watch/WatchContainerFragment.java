@@ -1,104 +1,65 @@
 package hr.foi.mjurinic.bach.fragments.watch;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-
-import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import hr.foi.mjurinic.bach.R;
-import hr.foi.mjurinic.bach.dagger.components.DaggerWatchComponent;
-import hr.foi.mjurinic.bach.dagger.components.WatchComponent;
-import hr.foi.mjurinic.bach.dagger.modules.WatchModule;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
-import hr.foi.mjurinic.bach.models.WifiHostInformation;
-import hr.foi.mjurinic.bach.mvp.presenters.WatchPresenter;
-import hr.foi.mjurinic.bach.mvp.views.WatchView;
+import hr.foi.mjurinic.bach.mvp.interactors.SocketInteractor;
+import hr.foi.mjurinic.bach.mvp.interactors.impl.SocketInteractorImpl;
 import hr.foi.mjurinic.bach.utils.adapters.ViewPagerAdapter;
+import timber.log.Timber;
 
-public class WatchContainerFragment extends BaseFragment implements WatchView {
+public class WatchContainerFragment extends BaseFragment {
 
-    @BindView(R.id.watch_view_pager)
-    ViewPager viewPager;
-
-    @Inject
-    WatchPresenter watchPresenter;
-
+    private ViewPager viewPager;
     private List<Fragment> fragments;
-    private WatchComponent watchComponent;
+    private SocketInteractor socketInteractor;
 
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_watch, container, false);
-        ButterKnife.bind(this, view);
+    protected int getViewStubLayoutResource() {
+        return R.layout.fragment_watch;
+    }
 
-        watchComponent = DaggerWatchComponent.builder()
-                .watchModule(new WatchModule(this))
-                .build();
+    @Override
+    protected void onCreateViewAfterViewStubInflated(View inflatedView, Bundle savedInstanceState) {
+        Timber.d("Watch container inflated!");
 
-        watchComponent.inject(this);
+        initFragments();
 
-        fragments = new ArrayList<>();
-        fragments.add(new QrScannerFragment());
-        fragments.add(new ConnectionFragment());
+        socketInteractor = new SocketInteractorImpl();
 
+        viewPager = (ViewPager) inflatedView.findViewById(R.id.view_pager_watch);
         viewPager.setAdapter(new ViewPagerAdapter(getChildFragmentManager(), fragments));
-        viewPager.setCurrentItem(0);
 
-        return view;
+        changeActiveFragment(0);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        watchPresenter.closeOpenConnections();
+
+        if (socketInteractor != null) {
+            socketInteractor.stopReceiver();
+            socketInteractor.stopSender();
+        }
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        watchPresenter.closeOpenConnections();
+    private void initFragments() {
+        fragments = new ArrayList<>();
+        fragments.add(new QrScannerFragment());
     }
 
     public void changeActiveFragment(int position) {
         viewPager.setCurrentItem(position);
-
-        switch (position) {
-            case 1: {
-                ((ConnectionFragment) fragments.get(1)).init(
-                        new Gson().fromJson(((QrScannerFragment) fragments.get(0)).getBarcodeValue(), WifiHostInformation.class));
-
-                break;
-            }
-
-            default:
-                break;
-        }
     }
 
-    public WatchComponent getWatchComponent() {
-        return watchComponent;
-    }
-
-    @Override
-    public void updateFrame() {
-
-    }
-
-    @Override
-    public void updateProgressText(String message) {
-
+    public SocketInteractor getSocketInteractor() {
+        return socketInteractor;
     }
 }

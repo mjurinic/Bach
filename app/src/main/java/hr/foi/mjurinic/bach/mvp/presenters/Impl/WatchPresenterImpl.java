@@ -12,8 +12,7 @@ import java.net.UnknownHostException;
 
 import javax.inject.Inject;
 
-import hr.foi.mjurinic.bach.BachApp;
-import hr.foi.mjurinic.bach.listeners.DataSentListener;
+import hr.foi.mjurinic.bach.listeners.DatagramSentListener;
 import hr.foi.mjurinic.bach.listeners.SocketListener;
 import hr.foi.mjurinic.bach.models.ReceivedPacket;
 import hr.foi.mjurinic.bach.models.WifiHostInformation;
@@ -22,7 +21,6 @@ import hr.foi.mjurinic.bach.mvp.presenters.WatchPresenter;
 import hr.foi.mjurinic.bach.mvp.views.WatchView;
 import hr.foi.mjurinic.bach.network.MediaSocket;
 import hr.foi.mjurinic.bach.network.protocol.ProtoMessage;
-import hr.foi.mjurinic.bach.network.protocol.ProtoMessageType;
 import hr.foi.mjurinic.bach.network.protocol.ProtoStreamConfig;
 import hr.foi.mjurinic.bach.network.protocol.ProtoStreamInfo;
 import hr.foi.mjurinic.bach.state.HelloState;
@@ -65,8 +63,8 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
 
     @Override
     public void connectToWifiHost(final WifiHostInformation hostInformation) {
-        BachApp.getInstance().registerWifiWatchBroadcastReceiver();
-        BachApp.getInstance().getWatchBroadcastReceiver().setWatchPresenter(this);
+        //BachApp.getInstance().registerWifiWatchBroadcastReceiver();
+        //BachApp.getInstance().getWatchBroadcastReceiver().setWatchPresenter(this);
 
         wifiManager = (WifiManager) context.getSystemService(context.WIFI_SERVICE);
         wifiManager.disconnect(); // Disconnect from current network
@@ -75,7 +73,7 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
         wifiConfiguration.SSID = String.format("\"%s\"", hostInformation.getNetworkName());
         wifiConfiguration.preSharedKey = String.format("\"%s\"", hostInformation.getPassphrase());
 
-        watchView.updateProgressText("Connecting to: " + hostInformation.getNetworkName() + "...");
+        // watchView.updateProgressText("Connecting to: " + hostInformation.getNetworkName() + "...");
 
         netId = wifiManager.addNetwork(wifiConfiguration);
         wifiManager.enableNetwork(netId, false);
@@ -99,7 +97,7 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
     public void initMediaTransport(WifiHostInformation hostInformation) {
         Timber.d("Initializing media transport socket.");
 
-        watchView.updateProgressText("Initializing media transport socket...");
+        // watchView.updateProgressText("Initializing media transport socket...");
 
         MediaSocket mediaSocket = new MediaSocket();
 
@@ -117,36 +115,36 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
 
         setState(new HelloState());
 
-        socketInteractor.send(new ProtoMessage(ProtoMessageType.HELLO_REQUEST), new DataSentListener() {
-            @Override
-            public void onSuccess() {
-                Timber.d("HelloRequest sent.");
-            }
+//        socketInteractor.send(new ProtoMessage(ProtoMessageType.HELLO_REQUEST), new DatagramSentListener() {
+//            @Override
+//            public void onSuccess() {
+//                Timber.d("HelloRequest sent.");
+//            }
+//
+//            @Override
+//            public void onError() {
+//                if (retryCnt == 5) {
+//                    // watchView.updateProgressText("Host. unreachable. Closing...");
+//                    Timber.d("Host unreachable. Closing...");
+//
+//                    return;
+//                }
+//
+//                try {
+//                    Timber.d("HelloRequest failed. Retrying in 2 seconds.");
+//
+//                    Thread.sleep(2000);
+//                    retryCnt += 1;
+//
+//                    socketInteractor.send(new ProtoMessage(ProtoMessageType.HELLO_REQUEST), this);
+//
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
 
-            @Override
-            public void onError() {
-                if (retryCnt == 5) {
-                    watchView.updateProgressText("Host. unreachable. Closing...");
-                    Timber.d("Host unreachable. Closing...");
-
-                    return;
-                }
-
-                try {
-                    Timber.d("HelloRequest failed. Retrying in 2 seconds.");
-
-                    Thread.sleep(2000);
-                    retryCnt += 1;
-
-                    socketInteractor.send(new ProtoMessage(ProtoMessageType.HELLO_REQUEST), this);
-
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        watchView.updateProgressText("Pinging host...");
+        // watchView.updateProgressText("Pinging host...");
         Timber.d("Current state: 'Hello'.");
     }
 
@@ -167,29 +165,29 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
     }
 
     @Override
-    public void sendData(ProtoMessage data, DataSentListener listener) {
+    public void sendData(ProtoMessage data, DatagramSentListener listener) {
         socketInteractor.send(data, listener);
     }
 
-    /**
-     * Socket callback.
-     *
-     * @param data Instance of ReceivedPacket.
-     */
-    @Override
-    public void onSuccess(ReceivedPacket data) {
-        if (state != null && data.getPayload() instanceof ProtoMessage) {
-            state.process(data, this);
-        }
-    }
-
-    /**
-     * Socket callback.
-     */
-    @Override
-    public void onError() {
-
-    }
+//    /**
+//     * Socket callback.
+//     *
+//     * @param data Instance of ReceivedPacket.
+//     */
+//    @Override
+//    public void onSuccess(ReceivedPacket data) {
+//        if (state != null && data.getPayload() instanceof ProtoMessage) {
+//            state.process(data, this);
+//        }
+//    }
+//
+//    /**
+//     * Socket callback.
+//     */
+//    @Override
+//    public void onError() {
+//
+//    }
 
     public void setState(State state) {
         this.state = state;
@@ -209,5 +207,10 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
 
     public void setStreamConfig(ProtoStreamConfig streamConfig) {
         this.streamConfig = streamConfig;
+    }
+
+    @Override
+    public void handleDatagram(ReceivedPacket data) {
+
     }
 }

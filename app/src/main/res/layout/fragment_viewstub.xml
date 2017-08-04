@@ -4,9 +4,9 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
-    <hr.foi.mjurinic.bach.utils.adapters.NoSwipeViewPager
-        android:id="@+id/view_pager_watch"
+    <ViewStub
+        android:id="@+id/view_stub_base"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"/>
 
 </LinearLayout>
