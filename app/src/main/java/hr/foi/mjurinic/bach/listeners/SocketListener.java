@@ -4,7 +4,5 @@ import hr.foi.mjurinic.bach.models.ReceivedPacket;
 
 public interface SocketListener {
 
-    void onSuccess(ReceivedPacket data);
-
-    void onError();
+    void handleDatagram(ReceivedPacket data);
 }

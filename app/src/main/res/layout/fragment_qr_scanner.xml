@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
     <include
+        android:id="@+id/toolbar_primary_color"
         layout="@layout/layout_toolbar_primary_color"
         android:layout_width="match_parent"
         android:layout_height="@dimen/app_bar_size_x4"/>
@@ -13,6 +14,34 @@
         android:id="@+id/camera_preview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@id/toolbar_primary_color"
         android:background="@android:color/black"/>
 
-</LinearLayout>
+    <RelativeLayout
+        android:id="@+id/progress_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar_primary_color"
+        android:background="@android:color/white"
+        android:paddingEnd="@dimen/default_spacing"
+        android:paddingStart="@dimen/default_spacing"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tv_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/qr_progress"
+            android:text="Initializing components..."/>
+
+        <ProgressBar
+            android:id="@+id/qr_progress"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:indeterminate="true"
+            android:visibility="visible"/>
+    </RelativeLayout>
+
+</RelativeLayout>

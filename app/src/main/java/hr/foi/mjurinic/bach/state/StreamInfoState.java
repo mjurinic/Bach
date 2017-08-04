@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import hr.foi.mjurinic.bach.fragments.stream.StreamFragment;
-import hr.foi.mjurinic.bach.listeners.DataSentListener;
 import hr.foi.mjurinic.bach.models.CameraSize;
 import hr.foi.mjurinic.bach.models.ReceivedPacket;
 import hr.foi.mjurinic.bach.mvp.presenters.Impl.StreamPresenterImpl;
@@ -53,33 +52,33 @@ public class StreamInfoState implements State {
 
                         streamPresenter.setStreamInfo((ProtoStreamInfo) streamInfoResponse);
 
-                        streamPresenter.sendData(streamInfoResponse, new DataSentListener() {
-                            @Override
-                            public void onSuccess() {
-                                Timber.d("StreamInfoResponse sent. Next state: StreamConfigState");
-                                streamPresenter.setState(new StreamConfigState());
-                            }
+//                        streamPresenter.sendData(streamInfoResponse, new DatagramSentListener() {
+//                            @Override
+//                            public void onSuccess() {
+//                                Timber.d("StreamInfoResponse sent. Next state: StreamConfigState");
+//                                streamPresenter.setState(new StreamConfigState());
+//                            }
 
-                            @Override
-                            public void onError() {
-                                if (retryCnt == 5) {
-                                    Timber.d("Client unreachable.");
-                                    return;
-                                }
-
-                                try {
-                                    Timber.d("StreamInfoResponse failed. Retrying in 2 seconds.");
-
-                                    Thread.sleep(2000);
-                                    retryCnt += 1;
-
-                                    streamPresenter.sendData(streamInfoResponse, this);
-
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        });
+//                            @Override
+//                            public void onError() {
+//                                if (retryCnt == 5) {
+//                                    Timber.d("Client unreachable.");
+//                                    return;
+//                                }
+//
+//                                try {
+//                                    Timber.d("StreamInfoResponse failed. Retrying in 2 seconds.");
+//
+//                                    Thread.sleep(2000);
+//                                    retryCnt += 1;
+//
+//                                    streamPresenter.sendData(streamInfoResponse, this);
+//
+//                                } catch (InterruptedException e) {
+//                                    e.printStackTrace();
+//                                }
+//                            }
+//                        });
 
                     } else {
                         Timber.d("Wrong view.");
@@ -122,33 +121,33 @@ public class StreamInfoState implements State {
                     );
 
                     watchPresenter.setStreamConfig((ProtoStreamConfig) streamConfigRequest);
-                    watchPresenter.sendData(streamConfigRequest, new DataSentListener() {
-                        @Override
-                        public void onSuccess() {
-                            Timber.d("StreamConfigRequest sent. Next state: StreamConfigState");
-                            watchPresenter.setState(new StreamConfigState());
-                        }
-
-                        @Override
-                        public void onError() {
-                            if (retryCnt == 5) {
-                                Timber.d("Client unreachable.");
-                                return;
-                            }
-
-                            try {
-                                Timber.d("StreamConfigRequest failed. Retrying in 2 seconds.");
-
-                                Thread.sleep(2000);
-                                retryCnt += 1;
-
-                                watchPresenter.sendData(streamConfigRequest, this);
-
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
+//                    watchPresenter.sendData(streamConfigRequest, new DatagramSentListener() {
+//                        @Override
+//                        public void onSuccess() {
+//                            Timber.d("StreamConfigRequest sent. Next state: StreamConfigState");
+//                            watchPresenter.setState(new StreamConfigState());
+//                        }
+//
+////                        @Override
+////                        public void onError() {
+////                            if (retryCnt == 5) {
+////                                Timber.d("Client unreachable.");
+////                                return;
+////                            }
+////
+////                            try {
+////                                Timber.d("StreamConfigRequest failed. Retrying in 2 seconds.");
+////
+////                                Thread.sleep(2000);
+////                                retryCnt += 1;
+////
+////                                watchPresenter.sendData(streamConfigRequest, this);
+////
+////                            } catch (InterruptedException e) {
+////                                e.printStackTrace();
+////                            }
+////                        }
+//                    });
                 }
 
                 break;

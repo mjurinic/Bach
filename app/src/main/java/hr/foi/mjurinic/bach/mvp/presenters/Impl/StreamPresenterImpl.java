@@ -16,9 +16,8 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import hr.foi.mjurinic.bach.BachApp;
 import hr.foi.mjurinic.bach.R;
-import hr.foi.mjurinic.bach.listeners.DataSentListener;
+import hr.foi.mjurinic.bach.listeners.DatagramSentListener;
 import hr.foi.mjurinic.bach.listeners.SocketListener;
 import hr.foi.mjurinic.bach.models.ReceivedPacket;
 import hr.foi.mjurinic.bach.models.WifiHostInformation;
@@ -52,13 +51,13 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
     public StreamPresenterImpl(Context context) {
         this.context = context;
 
-        wifiManager = BachApp.getInstance().getManager();
-        wifiChannel = BachApp.getInstance().getChannel();
+        //wifiManager = BachApp.getInstance().getManager();
+        //wifiChannel = BachApp.getInstance().getChannel();
     }
 
     @Override
     public void createWifiP2PGroup() {
-        BachApp.getInstance().registerWifiDirectBroadcastReceiver();
+        //BachApp.getInstance().registerWifiDirectBroadcastReceiver();
 
         // Called to avoid Wi-Fi P2P "Busy" error.
         removeWifiP2PGroup();
@@ -73,7 +72,7 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
 
             @Override
             public void onFailure(int reason) {
-                streamView.showError("P2P group creation failed. Make sure Wi-Fi is on. (" + reason + ")");
+                // streamView.showError("P2P group creation failed. Make sure Wi-Fi is on. (" + reason + ")");
             }
         });
     }
@@ -83,12 +82,12 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
         wifiManager.removeGroup(wifiChannel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
-                Timber.d("Removed Wi-Fi Peer-to-Peer group.");
+                Timber.d("Removed Wi-Fi P2P group.");
             }
 
             @Override
             public void onFailure(int reason) {
-                Timber.d("Failed to remove Wi-Fi Peer-to-Peer group: " + reason);
+                Timber.d("Failed to remove Wi-Fi P2P group: " + reason);
             }
         });
     }
@@ -157,7 +156,7 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
     }
 
     @Override
-    public void sendData(ProtoMessage data, DataSentListener listener) {
+    public void sendData(ProtoMessage data, DatagramSentListener listener) {
         socketInteractor.send(data, listener);
     }
 
@@ -213,27 +212,27 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
         initLocalService(wifiHostInformation);
     }
 
-    /**
-     * Socket callback.
-     *
-     * @param data Instance of ReceivedPacket.
-     */
-    @Override
-    public void onSuccess(ReceivedPacket data) {
-        Timber.d("Received new packet.");
-
-        if (state != null && data.getPayload() instanceof ProtoMessage) {
-            state.process(data, this);
-        }
-    }
-
-    /**
-     * Socket callback.
-     */
-    @Override
-    public void onError() {
-
-    }
+//    /**
+//     * Socket callback.
+//     *
+//     * @param data Instance of ReceivedPacket.
+//     */
+//    @Override
+//    public void onSuccess(ReceivedPacket data) {
+//        Timber.d("Received new packet.");
+//
+//        if (state != null && data.getPayload() instanceof ProtoMessage) {
+//            state.process(data, this);
+//        }
+//    }
+//
+//    /**
+//     * Socket callback.
+//     */
+//    @Override
+//    public void onError() {
+//
+//    }
 
     public void setState(State state) {
         this.state = state;
@@ -261,5 +260,10 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
 
     public boolean isIniting() {
         return isIniting;
+    }
+
+    @Override
+    public void handleDatagram(ReceivedPacket data) {
+
     }
 }

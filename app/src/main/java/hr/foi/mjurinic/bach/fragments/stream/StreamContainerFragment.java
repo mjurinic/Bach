@@ -1,113 +1,66 @@
 package hr.foi.mjurinic.bach.fragments.stream;
 
-import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import hr.foi.mjurinic.bach.R;
-import hr.foi.mjurinic.bach.dagger.components.DaggerStreamComponent;
-import hr.foi.mjurinic.bach.dagger.components.StreamComponent;
-import hr.foi.mjurinic.bach.dagger.modules.StreamModule;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
-import hr.foi.mjurinic.bach.mvp.presenters.StreamPresenter;
-import hr.foi.mjurinic.bach.mvp.views.BaseStreamView;
+import hr.foi.mjurinic.bach.mvp.interactors.SocketInteractor;
+import hr.foi.mjurinic.bach.mvp.interactors.impl.SocketInteractorImpl;
 import hr.foi.mjurinic.bach.utils.adapters.ViewPagerAdapter;
+import timber.log.Timber;
 
-public class StreamContainerFragment extends BaseFragment implements BaseStreamView {
+public class StreamContainerFragment extends BaseFragment {
 
-    @BindView(R.id.stream_view_pager)
-    ViewPager viewPager;
-
-    @Inject
-    StreamPresenter streamPresenter;
-
+    private ViewPager viewPager;
     private List<Fragment> fragments;
-    private StreamComponent streamComponent;
+    private SocketInteractor socketInteractor;
 
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_stream, container, false);
-        ButterKnife.bind(this, view);
+    protected int getViewStubLayoutResource() {
+        return R.layout.fragment_stream;
+    }
 
-        streamComponent = DaggerStreamComponent.builder()
-                .streamModule(new StreamModule(this))
-                .build();
+    @Override
+    protected void onCreateViewAfterViewStubInflated(View inflatedView, Bundle savedInstanceState) {
+        Timber.d("Stream container inflated!");
 
-        streamComponent.inject(this);
+        initFragments();
 
-        fragments = new ArrayList<>();
-        fragments.add(new ConnectionTypeFragment());
-        fragments.add(new QrFragment());
-        fragments.add(new StreamFragment());
+        socketInteractor = new SocketInteractorImpl();
 
+        viewPager = (ViewPager) inflatedView.findViewById(R.id.view_pager_stream);
         viewPager.setAdapter(new ViewPagerAdapter(getChildFragmentManager(), fragments));
-        viewPager.setCurrentItem(0);
 
-        return view;
+        changeActiveFragment(0);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        streamPresenter.closeOpenConnections();
+
+        if (socketInteractor != null) {
+            socketInteractor.stopReceiver();
+            socketInteractor.stopSender();
+        }
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        streamPresenter.closeOpenConnections();
+    private void initFragments() {
+        fragments = new ArrayList<>();
+        fragments.add(new ConnectionTypeFragment());
+        fragments.add(new StreamFragment());
     }
 
     public void changeActiveFragment(int position) {
         viewPager.setCurrentItem(position);
-
-        switch (position) {
-            case 1:
-                streamPresenter.createWifiP2PGroup();
-                ((QrFragment) fragments.get(1)).updateView();
-                break;
-
-            case 2:
-                ((StreamFragment) fragments.get(2)).updateView();
-                break;
-
-            default:
-                break;
-        }
     }
 
-    @Override
-    public void showQrCode(Bitmap qrCode) {
-    }
-
-    @Override
-    public void updateProgressText(String message) {
-
-    }
-
-    @Override
-    public void nextFragment() {
-
-    }
-
-    public StreamComponent getStreamComponent() {
-        return streamComponent;
-    }
-
-    public StreamPresenter getStreamPresenter() {
-        return streamPresenter;
+    public SocketInteractor getSocketInteractor() {
+        return socketInteractor;
     }
 }

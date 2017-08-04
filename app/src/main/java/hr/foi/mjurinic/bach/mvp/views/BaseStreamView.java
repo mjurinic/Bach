@@ -2,7 +2,7 @@ package hr.foi.mjurinic.bach.mvp.views;
 
 import android.graphics.Bitmap;
 
-public interface BaseStreamView extends BaseView {
+public interface BaseStreamView {
 
     void showQrCode(Bitmap qrCode);
 

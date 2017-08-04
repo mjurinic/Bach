@@ -1,59 +1,143 @@
 package hr.foi.mjurinic.bach.fragments.watch;
 
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.widget.Toolbar;
+import android.text.format.Formatter;
 import android.util.SparseArray;
-import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
+import com.google.gson.Gson;
 
 import java.io.IOException;
 
-import javax.inject.Inject;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
-import hr.foi.mjurinic.bach.mvp.presenters.WatchPresenter;
+import hr.foi.mjurinic.bach.models.WifiHostInformation;
+import hr.foi.mjurinic.bach.mvp.presenters.Impl.QrScannerPresenterImpl;
+import hr.foi.mjurinic.bach.mvp.presenters.QrScannerPresenter;
+import hr.foi.mjurinic.bach.mvp.views.BaseView;
 import timber.log.Timber;
 
-public class QrScannerFragment extends BaseFragment {
+public class QrScannerFragment extends BaseFragment implements BaseView {
 
-    @BindView(R.id.toolbar_primary_color)
-    Toolbar toolbar;
-
-    @BindView(R.id.camera_preview)
-    FrameLayout cameraPreview;
-
-    @Inject
-    WatchPresenter watchPresenter;
-
-    private BarcodeDetector barcodeDetector;
+    private QrScannerPresenter qrScannerPresenter;
+    private FrameLayout cameraPreview;
+    private RelativeLayout progressLayout;
+    private TextView tvProgress;
     private CameraSource cameraSource;
     private SurfaceView surfaceView;
-    private String barcodeValue;
+    private WifiManager wifiManager;
+    private int netId;
 
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_qr_scanner, container, false);
+    protected int getViewStubLayoutResource() {
+        return R.layout.fragment_qr_scanner;
+    }
 
-        ButterKnife.bind(this, view);
-        ((WatchContainerFragment) getParentFragment()).getWatchComponent().inject(this);
+    @Override
+    protected void onCreateViewAfterViewStubInflated(View inflatedView, Bundle savedInstanceState) {
+        Toolbar toolbar = (Toolbar) inflatedView.findViewById(R.id.toolbar_primary_color);
+        toolbar.setTitle("Scan QR Code");
 
-        toolbar.setTitle("Scan the QR Code");
+        cameraPreview = (FrameLayout) inflatedView.findViewById(R.id.camera_preview);
+        qrScannerPresenter = new QrScannerPresenterImpl(((WatchContainerFragment) getParentFragment()).getSocketInteractor(), this);
 
-        barcodeDetector = new BarcodeDetector.Builder(getBaseActivity().getApplicationContext())
+        progressLayout = (RelativeLayout) inflatedView.findViewById(R.id.progress_layout);
+        tvProgress = (TextView) inflatedView.findViewById(R.id.tv_progress);
+
+        initQrScanner();
+        initCameraPreview();
+    }
+
+    @Override
+    public void updateProgressText(final String progress) {
+        getBaseActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                tvProgress.setText(progress);
+            }
+        });
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        wifiManager.disconnect();
+        releaseCamera();
+    }
+
+    private void showProgressLayout() {
+        getBaseActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressLayout.setVisibility(View.VISIBLE);
+                cameraPreview.setVisibility(View.GONE);
+            }
+        });
+
+        releaseCamera();
+    }
+
+    private boolean isConnected() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getBaseActivity().getApplicationContext().
+                getSystemService(getBaseActivity().getApplicationContext().CONNECTIVITY_SERVICE);
+
+        if (connectivityManager != null) {
+            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+            return networkInfo != null && networkInfo.getState() == NetworkInfo.State.CONNECTED;
+        }
+
+        return false;
+    }
+
+    private void initWifiP2P(final WifiHostInformation hostInformation) {
+        Timber.d("Initializing Wi-Fi P2P...");
+
+        wifiManager = (WifiManager) getBaseActivity().getApplicationContext().
+                getSystemService(getBaseActivity().getApplicationContext().WIFI_SERVICE);
+
+        wifiManager.disconnect(); // Disconnect from current network
+
+        WifiConfiguration wifiConfiguration = new WifiConfiguration();
+        wifiConfiguration.SSID = String.format("\"%s\"", hostInformation.getNetworkName());
+        wifiConfiguration.preSharedKey = String.format("\"%s\"", hostInformation.getPassphrase());
+
+        // watchView.updateProgressText("Connecting to: " + hostInformation.getNetworkName() + "...");
+
+        netId = wifiManager.addNetwork(wifiConfiguration);
+        wifiManager.enableNetwork(netId, false);
+        wifiManager.reconnect();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (!isConnected()) ;
+
+                qrScannerPresenter.initSocketLayer(hostInformation);
+
+                Timber.d("Successfully connected to: " + hostInformation.getNetworkName());
+                Timber.d("Device IP: " + Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress()));
+                Timber.d("Link speed: " + wifiManager.getConnectionInfo().getLinkSpeed());
+            }
+        }).start();
+    }
+
+    private void initQrScanner() {
+        BarcodeDetector barcodeDetector = new BarcodeDetector.Builder(getBaseActivity().getApplicationContext())
                 .setBarcodeFormats(Barcode.QR_CODE)
                 .build();
 
@@ -71,28 +155,26 @@ public class QrScannerFragment extends BaseFragment {
 
             @Override
             public void receiveDetections(Detector.Detections<Barcode> detections) {
-                SparseArray<Barcode> barcodes = detections.getDetectedItems();
+                final SparseArray<Barcode> barcodes = detections.getDetectedItems();
 
                 if (barcodes.size() > 0) {
-                    barcodeValue = barcodes.valueAt(0).displayValue;
+                    Timber.d(barcodes.valueAt(0).displayValue);
 
-                    Timber.d(barcodeValue);
-
-                    // Idx: 1 -> ConnectionFragment
-                    ((WatchContainerFragment) getParentFragment()).changeActiveFragment(1);
-
-                    releaseCamera();
+                    getBaseActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            showProgressLayout();
+                            initWifiP2P(new Gson().fromJson(barcodes.valueAt(0).displayValue, WifiHostInformation.class));
+                        }
+                    });
                 }
             }
         });
-
-        initCameraPreview();
-
-        return view;
     }
 
     private void initCameraPreview() {
         surfaceView = new SurfaceView(getBaseActivity().getApplicationContext());
+
         surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
@@ -115,6 +197,7 @@ public class QrScannerFragment extends BaseFragment {
                 cameraSource.stop();
             }
         });
+
         cameraPreview.addView(surfaceView);
     }
 
@@ -125,21 +208,5 @@ public class QrScannerFragment extends BaseFragment {
 
             Timber.d("Camera preview stopped.");
         }
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        releaseCamera();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        releaseCamera();
-    }
-
-    public String getBarcodeValue() {
-        return barcodeValue;
     }
 }
