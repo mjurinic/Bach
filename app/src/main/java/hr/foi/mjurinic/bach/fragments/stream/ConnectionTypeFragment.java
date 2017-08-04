@@ -49,6 +49,7 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
     // Wifi
     private WifiP2pManager wifiManager;
     private WifiP2pManager.Channel wifiChannel;
+    private WifiP2pDnsSdServiceInfo serviceInfo;
     private WifiDirectBroadcastReceiver broadcastReceiver;
 
     private ConnectionTypePresenter connectionTypePresenter;
@@ -77,7 +78,7 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
         Gson gson = new Gson();
         Map<String, String> extraInfo = gson.fromJson(gson.toJson(hostInformation), Map.class);
 
-        WifiP2pDnsSdServiceInfo serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(hostInformation.getNetworkName(), SERVICE_TYPE, extraInfo);
+        serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(hostInformation.getNetworkName(), SERVICE_TYPE, extraInfo);
         updateProgressText("Advertising newly created access point...");
 
         wifiManager.addLocalService(wifiChannel, serviceInfo, new WifiP2pManager.ActionListener() {
@@ -111,7 +112,9 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
 
         if (wifiManager != null) {
             Timber.d("Closing Wi-Fi P2P access point...");
+
             removeWifiP2PGroup();
+            wifiManager.removeLocalService(wifiChannel, serviceInfo, null);
         }
     }
 
