@@ -2,7 +2,6 @@ package hr.foi.mjurinic.bach;
 
 import android.app.Application;
 
-import hr.foi.mjurinic.bach.dagger.components.DaggerAppComponent;
 import timber.log.Timber;
 
 public class BachApp extends Application {
@@ -14,7 +13,6 @@ public class BachApp extends Application {
         super.onCreate();
 
         setInstance(this);
-        DaggerAppComponent.create().inject(this);
 
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree());

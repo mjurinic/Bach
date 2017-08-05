@@ -18,14 +18,16 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Map;
 
 import hr.foi.mjurinic.bach.BachApp;
 import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
 import hr.foi.mjurinic.bach.models.WifiHostInformation;
-import hr.foi.mjurinic.bach.mvp.presenters.ConnectionTypePresenter;
-import hr.foi.mjurinic.bach.mvp.presenters.Impl.ConnectionTypePresenterImpl;
+import hr.foi.mjurinic.bach.mvp.presenters.stream.ConnectionTypePresenter;
+import hr.foi.mjurinic.bach.mvp.presenters.stream.impl.ConnectionTypePresenterImpl;
 import hr.foi.mjurinic.bach.mvp.views.ConnectionTypeView;
 import hr.foi.mjurinic.bach.utils.receivers.WifiDirectBroadcastReceiver;
 import timber.log.Timber;
@@ -107,14 +109,36 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
     }
 
     @Override
+    public void nextFragment() {
+        ((StreamContainerFragment) getParentFragment()).changeActiveFragment(1);
+    }
+
+    @Override
     public void onPause() {
         super.onPause();
 
         if (wifiManager != null) {
             Timber.d("Closing Wi-Fi P2P access point...");
 
-            removeWifiP2PGroup();
+            deletePersistentGroups();
             wifiManager.removeLocalService(wifiChannel, serviceInfo, null);
+        }
+    }
+
+    private void deletePersistentGroups() {
+        Method[] methods = WifiP2pManager.class.getMethods();
+
+        for (Method method : methods) {
+            if (method.getName().equals("deletePersistentGroup")) {
+                for (int i = 0; i < 32; ++i) {
+                    try {
+                        method.invoke(wifiManager, wifiChannel, i, null);
+
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
     }
 
@@ -134,6 +158,7 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
 
     private void createWifiP2PGroup() {
         // Prevents "Busy" bug
+        // deletePersistentGroups();
         removeWifiP2PGroup();
 
         updateProgressText("Creating Wi-Fi P2P group...");
@@ -146,7 +171,7 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
 
             @Override
             public void onFailure(int reason) {
-                // streamView.showError("P2P group creation failed. Make sure Wi-Fi is on. (" + reason + ")");
+                Timber.d("P2P group creation failed. Make sure Wi-Fi is on. (" + reason + ")");
             }
         });
     }

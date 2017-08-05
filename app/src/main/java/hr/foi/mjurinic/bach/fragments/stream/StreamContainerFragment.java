@@ -56,8 +56,13 @@ public class StreamContainerFragment extends BaseFragment {
         fragments.add(new StreamFragment());
     }
 
-    public void changeActiveFragment(int position) {
-        viewPager.setCurrentItem(position);
+    public void changeActiveFragment(final int position) {
+        getBaseActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                viewPager.setCurrentItem(position);
+            }
+        });
     }
 
     public SocketInteractor getSocketInteractor() {

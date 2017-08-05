@@ -1,4 +1,4 @@
-package hr.foi.mjurinic.bach.mvp.presenters.Impl;
+package hr.foi.mjurinic.bach.mvp.presenters.watch.impl;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -17,14 +17,12 @@ import hr.foi.mjurinic.bach.listeners.SocketListener;
 import hr.foi.mjurinic.bach.models.ReceivedPacket;
 import hr.foi.mjurinic.bach.models.WifiHostInformation;
 import hr.foi.mjurinic.bach.mvp.interactors.SocketInteractor;
-import hr.foi.mjurinic.bach.mvp.presenters.WatchPresenter;
+import hr.foi.mjurinic.bach.mvp.presenters.watch.WatchPresenter;
 import hr.foi.mjurinic.bach.mvp.views.WatchView;
 import hr.foi.mjurinic.bach.network.MediaSocket;
 import hr.foi.mjurinic.bach.network.protocol.ProtoMessage;
 import hr.foi.mjurinic.bach.network.protocol.ProtoStreamConfig;
 import hr.foi.mjurinic.bach.network.protocol.ProtoStreamInfo;
-import hr.foi.mjurinic.bach.state.HelloState;
-import hr.foi.mjurinic.bach.state.State;
 import timber.log.Timber;
 
 public class WatchPresenterImpl implements WatchPresenter, SocketListener {
@@ -33,7 +31,7 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
     private SocketInteractor socketInteractor;
     private Context context;
     private WifiManager wifiManager;
-    private State state;
+    //private StateLegacy stateLegacy;
 
     private int netId;
     private int retryCnt;
@@ -113,7 +111,7 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
         socketInteractor.startSender(mediaSocket);
         socketInteractor.startReceiver(mediaSocket, this);
 
-        setState(new HelloState());
+        //setStateLegacy(new HelloState());
 
 //        socketInteractor.send(new ProtoMessage(ProtoMessageType.HELLO_REQUEST), new DatagramSentListener() {
 //            @Override
@@ -145,7 +143,7 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
 //        });
 
         // watchView.updateProgressText("Pinging host...");
-        Timber.d("Current state: 'Hello'.");
+        Timber.d("Current stateLegacy: 'Hello'.");
     }
 
     @Override
@@ -176,8 +174,8 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
 //     */
 //    @Override
 //    public void onSuccess(ReceivedPacket data) {
-//        if (state != null && data.getPayload() instanceof ProtoMessage) {
-//            state.process(data, this);
+//        if (stateLegacy != null && data.getPayload() instanceof ProtoMessage) {
+//            stateLegacy.process(data, this);
 //        }
 //    }
 //
@@ -189,9 +187,9 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
 //
 //    }
 
-    public void setState(State state) {
-        this.state = state;
-    }
+//    public void setStateLegacy(StateLegacy stateLegacy) {
+//        this.stateLegacy = stateLegacy;
+//    }
 
     public ProtoStreamInfo getStreamInfo() {
         return streamInfo;

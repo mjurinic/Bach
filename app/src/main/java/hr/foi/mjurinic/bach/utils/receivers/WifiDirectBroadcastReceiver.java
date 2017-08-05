@@ -8,7 +8,7 @@ import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 
 import hr.foi.mjurinic.bach.models.WifiHostInformation;
-import hr.foi.mjurinic.bach.mvp.presenters.ConnectionTypePresenter;
+import hr.foi.mjurinic.bach.mvp.presenters.stream.ConnectionTypePresenter;
 
 public class WifiDirectBroadcastReceiver extends BroadcastReceiver {
 

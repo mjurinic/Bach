@@ -15,4 +15,6 @@ public interface SocketInteractor {
     void stopSender();
 
     void stopReceiver();
+
+    void updateReceiverCallback(SocketListener callback);
 }
