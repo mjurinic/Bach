@@ -1,12 +1,10 @@
 package hr.foi.mjurinic.bach.mvp.views;
 
-import android.hardware.Camera;
+import hr.foi.mjurinic.bach.network.protocol.ProtoStreamInfo;
 
-public interface StreamView extends BaseStreamView {
-
-    boolean initCamera(int cameraId);
+public interface StreamView extends BaseView {
 
     void showCameraPreview();
 
-    Camera getCamera();
+    ProtoStreamInfo provideCameraInfo();
 }

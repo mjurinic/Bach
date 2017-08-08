@@ -17,10 +17,12 @@ import timber.log.Timber;
 public class SocketInteractorImpl implements SocketInteractor {
 
     private Thread senderThread;
-    private boolean isSenderActive;
     private Thread receiverThread;
+    private boolean isSenderActive;
     private boolean isReceiverActive;
     private Queue<Pair<Object, DatagramSentListener>> outboundQueue;
+    private MediaSocket mediaSocket;
+    private SocketListener listener;
 
     @Override
     public void startSender(final MediaSocket socket) {
@@ -64,6 +66,9 @@ public class SocketInteractorImpl implements SocketInteractor {
 
     @Override
     public void startReceiver(final MediaSocket socket, final SocketListener callback) {
+        this.mediaSocket = socket;
+        this.listener = callback;
+
         receiverThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -71,7 +76,7 @@ public class SocketInteractorImpl implements SocketInteractor {
                     ReceivedPacket response = socket.receive();
 
                     if (response != null) {
-                        callback.handleDatagram(response);
+                        listener.handleDatagram(response);
                     }
                 }
 
@@ -105,4 +110,11 @@ public class SocketInteractorImpl implements SocketInteractor {
     public void stopReceiver() {
         isReceiverActive = false;
     }
+
+    @Override
+    public void updateReceiverCallback(SocketListener callback) {
+        this.listener = callback;
+    }
+
+
 }

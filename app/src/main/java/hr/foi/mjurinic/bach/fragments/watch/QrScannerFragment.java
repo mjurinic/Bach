@@ -26,8 +26,8 @@ import java.io.IOException;
 import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
 import hr.foi.mjurinic.bach.models.WifiHostInformation;
-import hr.foi.mjurinic.bach.mvp.presenters.Impl.QrScannerPresenterImpl;
-import hr.foi.mjurinic.bach.mvp.presenters.QrScannerPresenter;
+import hr.foi.mjurinic.bach.mvp.presenters.watch.impl.QrScannerPresenterImpl;
+import hr.foi.mjurinic.bach.mvp.presenters.watch.QrScannerPresenter;
 import hr.foi.mjurinic.bach.mvp.views.BaseView;
 import timber.log.Timber;
 
@@ -76,18 +76,16 @@ public class QrScannerFragment extends BaseFragment implements BaseView {
     public void onPause() {
         super.onPause();
 
-        wifiManager.disconnect();
+        if (wifiManager != null) {
+            wifiManager.disconnect();
+        }
+
         releaseCamera();
     }
 
     private void showProgressLayout() {
-        getBaseActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                progressLayout.setVisibility(View.VISIBLE);
-                cameraPreview.setVisibility(View.GONE);
-            }
-        });
+        progressLayout.setVisibility(View.VISIBLE);
+        cameraPreview.setVisibility(View.GONE);
 
         releaseCamera();
     }
@@ -112,11 +110,11 @@ public class QrScannerFragment extends BaseFragment implements BaseView {
 
         wifiManager.disconnect(); // Disconnect from current network
 
-        WifiConfiguration wifiConfiguration = new WifiConfiguration();
+        final WifiConfiguration wifiConfiguration = new WifiConfiguration();
         wifiConfiguration.SSID = String.format("\"%s\"", hostInformation.getNetworkName());
         wifiConfiguration.preSharedKey = String.format("\"%s\"", hostInformation.getPassphrase());
 
-        // watchView.updateProgressText("Connecting to: " + hostInformation.getNetworkName() + "...");
+        updateProgressText("Connecting to " + hostInformation.getNetworkName() + "...");
 
         netId = wifiManager.addNetwork(wifiConfiguration);
         wifiManager.enableNetwork(netId, false);
@@ -129,7 +127,7 @@ public class QrScannerFragment extends BaseFragment implements BaseView {
 
                 qrScannerPresenter.initSocketLayer(hostInformation);
 
-                Timber.d("Successfully connected to: " + hostInformation.getNetworkName());
+                Timber.d("Successfully connected to: " + wifiConfiguration.SSID);
                 Timber.d("Device IP: " + Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress()));
                 Timber.d("Link speed: " + wifiManager.getConnectionInfo().getLinkSpeed());
             }

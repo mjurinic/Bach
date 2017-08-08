@@ -1,4 +1,4 @@
-package hr.foi.mjurinic.bach.mvp.presenters.Impl;
+package hr.foi.mjurinic.bach.mvp.presenters.watch.impl;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -11,13 +11,14 @@ import hr.foi.mjurinic.bach.models.CameraSize;
 import hr.foi.mjurinic.bach.models.ReceivedPacket;
 import hr.foi.mjurinic.bach.models.WifiHostInformation;
 import hr.foi.mjurinic.bach.mvp.interactors.SocketInteractor;
-import hr.foi.mjurinic.bach.mvp.presenters.QrScannerPresenter;
+import hr.foi.mjurinic.bach.mvp.presenters.watch.QrScannerPresenter;
 import hr.foi.mjurinic.bach.mvp.views.BaseView;
 import hr.foi.mjurinic.bach.network.MediaSocket;
 import hr.foi.mjurinic.bach.network.protocol.ProtoMessage;
 import hr.foi.mjurinic.bach.network.protocol.ProtoMessageType;
 import hr.foi.mjurinic.bach.network.protocol.ProtoStreamConfig;
 import hr.foi.mjurinic.bach.network.protocol.ProtoStreamInfo;
+import hr.foi.mjurinic.bach.utils.state.State;
 import timber.log.Timber;
 
 public class QrScannerPresenterImpl implements QrScannerPresenter, SocketListener {
@@ -26,6 +27,7 @@ public class QrScannerPresenterImpl implements QrScannerPresenter, SocketListene
     private BaseView view;
     private ProtoStreamInfo streamInfo;
     private int lastConfigIndex;
+    private String currState = State.HELLO_STATE;
 
     @Inject
     public QrScannerPresenterImpl(SocketInteractor socketInteractor, BaseView view) {
@@ -66,22 +68,40 @@ public class QrScannerPresenterImpl implements QrScannerPresenter, SocketListene
 
             switch (message.getId()) {
                 case ProtoMessageType.HELLO_RESPONSE:
-                    Timber.d("Received HelloResponse!");
-                    streamInfoState();
+                    if (currState.equals(State.HELLO_STATE)) {
+                        Timber.d("Received HelloResponse!");
+
+                        try {
+                            // Waiting for client to switch fragments lol (hacky hacky)
+                            Thread.sleep(2000);
+
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
+                        streamInfoState();
+                    }
                     break;
 
                 case ProtoMessageType.STREAM_INFO_RESPONSE:
-                    Timber.d("Received StreamInfoResponse!");
-                    handleStreamInfoResponse((ProtoStreamInfo) message);
+                    if (currState.equals(State.STREAM_INFO_STATE)) {
+                        Timber.d("Received StreamInfoResponse!");
+                        handleStreamInfoResponse((ProtoStreamInfo) message);
+                    }
                     break;
 
                 case ProtoMessageType.STREAM_CONFIG_RESPONSE_OK:
-                    // TODO StreamState -> change to new fragment
-                    Timber.d("[STREAM_STATE] Started.");
+                    if (currState.equals(State.STREAM_CONFIG_STATE)) {
+                        Timber.d("Received StreamConfigResponse: OK!");
+                        // TODO next fragment
+                    }
                     break;
 
                 case ProtoMessageType.STREAM_CONFIG_RESPONSE_ERROR:
-                    streamConfigState(streamInfo, ++lastConfigIndex);
+                    if (currState.equals(State.STREAM_CONFIG_STATE)) {
+                        Timber.d("Received StreamConfigResponse: Error!");
+                        streamConfigState(streamInfo, ++lastConfigIndex);
+                    }
                     break;
 
                 default:
@@ -116,6 +136,8 @@ public class QrScannerPresenterImpl implements QrScannerPresenter, SocketListene
         Timber.d("[STREAM_INFO_STATE] Started.");
         updateProgressText("Gathering stream info...");
 
+        currState = State.STREAM_INFO_STATE;
+
         sendMessage(new ProtoMessage(ProtoMessageType.STREAM_INFO_REQUEST), new DatagramSentListener(this) {
             @Override
             public void onSuccess() {
@@ -147,6 +169,8 @@ public class QrScannerPresenterImpl implements QrScannerPresenter, SocketListene
 
     private void streamConfigState(ProtoStreamInfo streamInfo, int configPosition) {
         Timber.d("[STREAM_CONFIG_STATE] Started.");
+
+        currState = State.STREAM_CONFIG_STATE;
 
         // Create a Stream configuration request to match current
         // network speed & device resolution. Sort different configuration

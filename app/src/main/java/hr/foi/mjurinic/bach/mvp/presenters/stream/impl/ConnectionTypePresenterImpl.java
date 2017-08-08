@@ -1,4 +1,4 @@
-package hr.foi.mjurinic.bach.mvp.presenters.Impl;
+package hr.foi.mjurinic.bach.mvp.presenters.stream.impl;
 
 import android.graphics.Bitmap;
 import android.support.v4.content.res.ResourcesCompat;
@@ -16,11 +16,12 @@ import hr.foi.mjurinic.bach.listeners.SocketListener;
 import hr.foi.mjurinic.bach.models.ReceivedPacket;
 import hr.foi.mjurinic.bach.models.WifiHostInformation;
 import hr.foi.mjurinic.bach.mvp.interactors.SocketInteractor;
-import hr.foi.mjurinic.bach.mvp.presenters.ConnectionTypePresenter;
+import hr.foi.mjurinic.bach.mvp.presenters.stream.ConnectionTypePresenter;
 import hr.foi.mjurinic.bach.mvp.views.ConnectionTypeView;
 import hr.foi.mjurinic.bach.network.MediaSocket;
 import hr.foi.mjurinic.bach.network.protocol.ProtoMessage;
 import hr.foi.mjurinic.bach.network.protocol.ProtoMessageType;
+import hr.foi.mjurinic.bach.utils.state.State;
 import timber.log.Timber;
 
 
@@ -29,6 +30,7 @@ public class ConnectionTypePresenterImpl implements ConnectionTypePresenter, Soc
     private SocketInteractor socketInteractor;
     private ConnectionTypeView view;
     private MediaSocket mediaSocket;
+    private String currState = State.HELLO_STATE;
 
     public ConnectionTypePresenterImpl(SocketInteractor socketInteractor, ConnectionTypeView view) {
         this.socketInteractor = socketInteractor;
@@ -45,8 +47,6 @@ public class ConnectionTypePresenterImpl implements ConnectionTypePresenter, Soc
 
         hostInformation.setDevicePort(String.valueOf(mediaSocket.getPort()));
         view.advertiseAccessPoint(hostInformation);
-
-        // TODO setState(new HelloState());
 
         Timber.d("Current state: 'Hello'.");
         view.updateProgressText("Waiting for clients...");
@@ -105,8 +105,14 @@ public class ConnectionTypePresenterImpl implements ConnectionTypePresenter, Soc
 
             switch (message.getId()) {
                 case ProtoMessageType.HELLO_REQUEST:
-                    Timber.d("Received HelloRequest.");
-                    handleHelloRequest(packet);
+                    if (currState.equals(State.HELLO_STATE)) {
+                        Timber.d("Received HelloRequest.");
+                        handleHelloRequest(packet);
+                    }
+                    break;
+
+                case ProtoMessageType.STREAM_INFO_REQUEST:
+                    Timber.d("Imam ga...");
                     break;
 
                 default:
@@ -124,7 +130,7 @@ public class ConnectionTypePresenterImpl implements ConnectionTypePresenter, Soc
             @Override
             public void onSuccess() {
                 Timber.d("HelloResponse sent. New state: 'StreamInfoState'");
-                // TODO switch to StreamInfoState and handle those messages
+                view.nextFragment();
             }
         });
     }

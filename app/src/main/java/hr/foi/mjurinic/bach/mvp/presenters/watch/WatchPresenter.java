@@ -1,4 +1,4 @@
-package hr.foi.mjurinic.bach.mvp.presenters;
+package hr.foi.mjurinic.bach.mvp.presenters.watch;
 
 import hr.foi.mjurinic.bach.listeners.DatagramSentListener;
 import hr.foi.mjurinic.bach.models.WifiHostInformation;

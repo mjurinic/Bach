@@ -9,4 +9,6 @@ public interface ConnectionTypeView extends BaseView {
     void advertiseAccessPoint(WifiHostInformation hostInformation);
 
     void showQrCode(Bitmap qrCode);
+
+    void nextFragment();
 }

@@ -27,7 +27,7 @@
 //import hr.foi.mjurinic.bach.R;
 //import hr.foi.mjurinic.bach.dagger.components.DaggerMainActivityComponent;
 //import hr.foi.mjurinic.bach.dagger.modules.StreamModule;
-//import hr.foi.mjurinic.bach.mvp.presenters.Impl.StreamPresenterImpl;
+//import hr.foi.mjurinic.bach.mvp.presenters.stream.impl.StreamPresenterImpl;
 //import hr.foi.mjurinic.bach.mvp.views.BaseStreamView;
 //import hr.foi.mjurinic.bach.utils.views.CameraPreviewSurfaceView;
 //
