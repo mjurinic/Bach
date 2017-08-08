@@ -1,6 +1,8 @@
 package hr.foi.mjurinic.bach.mvp.views;
 
+import android.graphics.Bitmap;
+
 public interface WatchView {
 
-    void updateFrame();
+    void updateFrame(Bitmap frame);
 }

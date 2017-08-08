@@ -23,7 +23,7 @@ public class WatchContainerFragment extends BaseFragment {
 
     @Override
     protected int getViewStubLayoutResource() {
-        return R.layout.fragment_watch;
+        return R.layout.fragment_watch_container;
     }
 
     @Override
