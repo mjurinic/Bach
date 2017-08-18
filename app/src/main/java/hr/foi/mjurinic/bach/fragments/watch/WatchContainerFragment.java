@@ -53,6 +53,7 @@ public class WatchContainerFragment extends BaseFragment {
     private void initFragments() {
         fragments = new ArrayList<>();
         fragments.add(new QrScannerFragment());
+        fragments.add(new WatchFragment());
     }
 
     public void changeActiveFragment(int position) {

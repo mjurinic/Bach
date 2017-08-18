@@ -26,12 +26,12 @@ import java.io.IOException;
 import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
 import hr.foi.mjurinic.bach.models.WifiHostInformation;
-import hr.foi.mjurinic.bach.mvp.presenters.watch.impl.QrScannerPresenterImpl;
 import hr.foi.mjurinic.bach.mvp.presenters.watch.QrScannerPresenter;
-import hr.foi.mjurinic.bach.mvp.views.BaseView;
+import hr.foi.mjurinic.bach.mvp.presenters.watch.impl.QrScannerPresenterImpl;
+import hr.foi.mjurinic.bach.mvp.views.QrScannerView;
 import timber.log.Timber;
 
-public class QrScannerFragment extends BaseFragment implements BaseView {
+public class QrScannerFragment extends BaseFragment implements QrScannerView {
 
     private QrScannerPresenter qrScannerPresenter;
     private FrameLayout cameraPreview;
@@ -49,14 +49,9 @@ public class QrScannerFragment extends BaseFragment implements BaseView {
 
     @Override
     protected void onCreateViewAfterViewStubInflated(View inflatedView, Bundle savedInstanceState) {
-        Toolbar toolbar = (Toolbar) inflatedView.findViewById(R.id.toolbar_primary_color);
-        toolbar.setTitle("Scan QR Code");
+        bindViews(inflatedView);
 
-        cameraPreview = (FrameLayout) inflatedView.findViewById(R.id.camera_preview);
         qrScannerPresenter = new QrScannerPresenterImpl(((WatchContainerFragment) getParentFragment()).getSocketInteractor(), this);
-
-        progressLayout = (RelativeLayout) inflatedView.findViewById(R.id.progress_layout);
-        tvProgress = (TextView) inflatedView.findViewById(R.id.tv_progress);
 
         initQrScanner();
         initCameraPreview();
@@ -68,6 +63,16 @@ public class QrScannerFragment extends BaseFragment implements BaseView {
             @Override
             public void run() {
                 tvProgress.setText(progress);
+            }
+        });
+    }
+
+    @Override
+    public void nextFragment() {
+        getBaseActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((WatchContainerFragment) getParentFragment()).changeActiveFragment(1);
             }
         });
     }
@@ -206,5 +211,14 @@ public class QrScannerFragment extends BaseFragment implements BaseView {
 
             Timber.d("Camera preview stopped.");
         }
+    }
+
+    private void bindViews(View view) {
+        Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar_primary_color);
+        toolbar.setTitle("Scan QR Code");
+
+        cameraPreview = (FrameLayout) view.findViewById(R.id.camera_preview);
+        progressLayout = (RelativeLayout) view.findViewById(R.id.progress_layout);
+        tvProgress = (TextView) view.findViewById(R.id.tv_progress);
     }
 }

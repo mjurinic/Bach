@@ -13,10 +13,13 @@ import java.util.List;
 
 import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
+import hr.foi.mjurinic.bach.listeners.DatagramSentListener;
 import hr.foi.mjurinic.bach.models.CameraSize;
 import hr.foi.mjurinic.bach.mvp.presenters.stream.StreamPresenter;
 import hr.foi.mjurinic.bach.mvp.presenters.stream.impl.StreamPresenterImpl;
 import hr.foi.mjurinic.bach.mvp.views.StreamView;
+import hr.foi.mjurinic.bach.network.protocol.ProtoMultimedia;
+import hr.foi.mjurinic.bach.network.protocol.ProtoStreamConfig;
 import hr.foi.mjurinic.bach.network.protocol.ProtoStreamInfo;
 import hr.foi.mjurinic.bach.utils.views.CameraPreviewSurfaceView;
 import timber.log.Timber;
@@ -37,6 +40,7 @@ public class StreamFragment extends BaseFragment implements StreamView {
     private int cameraBackId = 0;
 
     private StreamPresenter streamPresenter;
+    private StreamView view;
 
     @Override
     protected int getViewStubLayoutResource() {
@@ -48,19 +52,54 @@ public class StreamFragment extends BaseFragment implements StreamView {
         Timber.d("StreamFragment inflated!");
 
         streamPresenter = new StreamPresenterImpl(this, ((StreamContainerFragment) getParentFragment()).getSocketInteractor());
+        view = this;
 
         bindViews(inflatedView);
         initCamera(0);
     }
 
     @Override
-    public void showCameraPreview() {
-        surfaceView = new CameraPreviewSurfaceView(getBaseActivity().getApplicationContext(), camera);
-        cameraPreview.addView(surfaceView);
+    public void onPause() {
+        super.onPause();
+        releaseCamera();
+    }
 
-        toolbar.setVisibility(View.GONE);
-        streamProgressLayout.setVisibility(View.GONE);
-        cameraPreview.setVisibility(View.VISIBLE);
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        releaseCamera();
+    }
+
+    @Override
+    public void showCameraPreview(ProtoStreamConfig streamConfig) {
+        Camera.Parameters camParams = camera.getParameters();
+        // camParams.setPreviewSize(streamConfig.getResolution().getWidth(), streamConfig.getResolution().getHeight());
+
+        camParams.setPreviewSize(640, 480);
+        camera.setParameters(camParams);
+
+        getBaseActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                surfaceView = new CameraPreviewSurfaceView(getBaseActivity().getApplicationContext(), camera, view);
+                cameraPreview.addView(surfaceView);
+
+                toolbar.setVisibility(View.GONE);
+                streamProgressLayout.setVisibility(View.GONE);
+                cameraPreview.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    @Override
+    public void handleFrame(byte[] frame) {
+        // No re-sends on multimedia messages!
+        streamPresenter.sendMessage(new ProtoMultimedia(frame), new DatagramSentListener(streamPresenter, 5) {
+            @Override
+            public void onSuccess() {
+                Timber.i("Frame sent!");
+            }
+        });
     }
 
     @Override
@@ -80,8 +119,6 @@ public class StreamFragment extends BaseFragment implements StreamView {
     }
 
     private boolean initCamera(int cameraId) {
-        releaseCamera();
-
         try {
             camera = Camera.open(cameraId);
             camera.setDisplayOrientation(90);
@@ -98,7 +135,9 @@ public class StreamFragment extends BaseFragment implements StreamView {
     }
 
     private void releaseCamera() {
-        cameraPreview.removeAllViews();
+        if (cameraPreview != null) {
+            cameraPreview.removeAllViews();
+        }
 
         if (camera != null) {
             camera.release();

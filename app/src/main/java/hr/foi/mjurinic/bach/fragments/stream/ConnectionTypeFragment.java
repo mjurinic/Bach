@@ -3,6 +3,7 @@ package hr.foi.mjurinic.bach.fragments.stream;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.os.Bundle;
@@ -117,11 +118,32 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
     public void onPause() {
         super.onPause();
 
-        if (wifiManager != null) {
-            Timber.d("Closing Wi-Fi P2P access point...");
+        Timber.d("Closing Wi-Fi P2P access point...");
+        disconnect();
+    }
 
-            deletePersistentGroups();
-            wifiManager.removeLocalService(wifiChannel, serviceInfo, null);
+    private void disconnect() {
+        if (wifiManager != null && wifiChannel != null) {
+            wifiManager.requestGroupInfo(wifiChannel, new WifiP2pManager.GroupInfoListener() {
+                @Override
+                public void onGroupInfoAvailable(WifiP2pGroup group) {
+                    if (group != null && wifiManager != null && wifiChannel != null
+                            && group.isGroupOwner()) {
+                        wifiManager.removeGroup(wifiChannel, new WifiP2pManager.ActionListener() {
+
+                            @Override
+                            public void onSuccess() {
+                                Timber.d("Remove p2p group success.");
+                            }
+
+                            @Override
+                            public void onFailure(int reason) {
+                                Timber.d("Remove p2p group error: " + reason);
+                            }
+                        });
+                    }
+                }
+            });
         }
     }
 

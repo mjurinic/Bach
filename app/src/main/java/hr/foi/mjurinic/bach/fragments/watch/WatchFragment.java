@@ -1,6 +1,7 @@
 package hr.foi.mjurinic.bach.fragments.watch;
 
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -8,6 +9,7 @@ import android.widget.ImageView;
 import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
 import hr.foi.mjurinic.bach.mvp.presenters.watch.WatchPresenter;
+import hr.foi.mjurinic.bach.mvp.presenters.watch.impl.WatchPresenterImpl;
 import hr.foi.mjurinic.bach.mvp.views.WatchView;
 
 public class WatchFragment extends BaseFragment implements WatchView {
@@ -24,7 +26,8 @@ public class WatchFragment extends BaseFragment implements WatchView {
     protected void onCreateViewAfterViewStubInflated(View inflatedView, Bundle savedInstanceState) {
         bindViews(inflatedView);
 
-
+        watchPresenter = new WatchPresenterImpl(this, ((WatchContainerFragment) getParentFragment()).getSocketInteractor());
+        watchPresenter.sendClientReady();
     }
 
     @Override
@@ -32,7 +35,10 @@ public class WatchFragment extends BaseFragment implements WatchView {
         getBaseActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                streamPreview.setImageBitmap(frame);
+                Matrix matrix = new Matrix();
+                matrix.postRotate(90);
+
+                streamPreview.setImageBitmap(Bitmap.createBitmap(frame, 0, 0, frame.getWidth(), frame.getHeight(), matrix, true));
             }
         });
     }

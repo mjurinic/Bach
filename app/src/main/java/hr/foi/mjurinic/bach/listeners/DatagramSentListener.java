@@ -15,13 +15,16 @@ public abstract class DatagramSentListener {
         this.presenter = presenter;
     }
 
+    public DatagramSentListener(BasePresenter presenter, int retryCnt) {
+        this.presenter = presenter;
+        this.retryCnt = retryCnt;
+    }
+
     public abstract void onSuccess();
 
     public void onError(ProtoMessage message) {
         if (retryCnt == 5) {
-            Timber.d("Host unreachable. Closing...");
-            presenter.updateProgressText("Host unreachable. Closing...");
-
+            Timber.d("Host unreachable.");
             return;
         }
 
@@ -36,5 +39,9 @@ public abstract class DatagramSentListener {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public void disableRetries() {
+        retryCnt = 5;
     }
 }

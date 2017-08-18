@@ -21,6 +21,7 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
     private StreamView view;
     private SocketInteractor socketInteractor;
     private ProtoStreamInfo streamInfo;
+    private ProtoStreamConfig streamConfig;
     private String currState = State.STREAM_INFO_STATE;
 
     public StreamPresenterImpl(StreamView view, SocketInteractor socketInteractor) {
@@ -41,6 +42,7 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
                         Timber.d("Received StreamInfoRequest!");
                         handleStreamInfoRequest();
                     }
+
                     break;
 
                 case ProtoMessageType.STREAM_CONFIG_REQUEST:
@@ -48,12 +50,14 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
                         Timber.d("Received StreamConfigRequest!");
                         handleStreamConfigRequest((ProtoStreamConfig) message);
                     }
+
                     break;
 
                 case ProtoMessageType.CLIENT_READY:
                     if (currState.equals(State.STREAMING_STATE)) {
-                        view.showCameraPreview();
+                        view.showCameraPreview(streamConfig);
                     }
+
                     break;
 
                 default:
@@ -86,7 +90,7 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
         });
     }
 
-    private void handleStreamConfigRequest(ProtoStreamConfig payload) {
+    private void handleStreamConfigRequest(final ProtoStreamConfig payload) {
         Timber.d("Requested resolution: " + payload.getResolution().getWidth() + "x" + payload.getResolution().getHeight());
         Timber.d("Requested FPS: " + payload.getFpsRange()[0] + " - " + payload.getFpsRange()[1]);
 
@@ -107,14 +111,21 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
             }
         }
 
-        sendMessage(new ProtoMessage(checkConfig ? ProtoMessageType.STREAM_CONFIG_RESPONSE_OK : ProtoMessageType
-                .STREAM_CONFIG_RESPONSE_ERROR), new DatagramSentListener(this) {
+        final ProtoMessage response = new ProtoMessage(checkConfig ?
+                ProtoMessageType.STREAM_CONFIG_RESPONSE_OK :
+                ProtoMessageType.STREAM_CONFIG_RESPONSE_ERROR);
+
+        sendMessage(response, new DatagramSentListener(this) {
             @Override
             public void onSuccess() {
                 Timber.d("[STREAM_CONFIG_STATE] StreamConfigResponse sent!");
-                Timber.d("Next state: STREAMING_STATE.");
 
-                currState = State.STREAMING_STATE;
+                if (response.getId() == ProtoMessageType.STREAM_CONFIG_RESPONSE_OK) {
+                    Timber.d("Next state: STREAMING_STATE.");
+
+                    streamConfig = payload;
+                    currState = State.STREAMING_STATE;
+                }
             }
         });
     }

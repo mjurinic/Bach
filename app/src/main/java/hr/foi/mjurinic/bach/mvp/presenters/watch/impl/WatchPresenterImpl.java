@@ -1,214 +1,79 @@
 package hr.foi.mjurinic.bach.mvp.presenters.watch.impl;
 
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.wifi.WifiConfiguration;
-import android.net.wifi.WifiManager;
-import android.text.format.Formatter;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
-import javax.inject.Inject;
+import android.graphics.Bitmap;
 
 import hr.foi.mjurinic.bach.listeners.DatagramSentListener;
 import hr.foi.mjurinic.bach.listeners.SocketListener;
 import hr.foi.mjurinic.bach.models.ReceivedPacket;
-import hr.foi.mjurinic.bach.models.WifiHostInformation;
 import hr.foi.mjurinic.bach.mvp.interactors.SocketInteractor;
 import hr.foi.mjurinic.bach.mvp.presenters.watch.WatchPresenter;
 import hr.foi.mjurinic.bach.mvp.views.WatchView;
-import hr.foi.mjurinic.bach.network.MediaSocket;
 import hr.foi.mjurinic.bach.network.protocol.ProtoMessage;
-import hr.foi.mjurinic.bach.network.protocol.ProtoStreamConfig;
-import hr.foi.mjurinic.bach.network.protocol.ProtoStreamInfo;
+import hr.foi.mjurinic.bach.network.protocol.ProtoMessageType;
+import hr.foi.mjurinic.bach.network.protocol.ProtoMultimedia;
+import hr.foi.mjurinic.bach.utils.state.State;
 import timber.log.Timber;
 
 public class WatchPresenterImpl implements WatchPresenter, SocketListener {
 
-    private WatchView watchView;
+    private WatchView view;
     private SocketInteractor socketInteractor;
-    private Context context;
-    private WifiManager wifiManager;
-    //private StateLegacy stateLegacy;
+    private String currState = State.STREAM_CONFIG_STATE;
 
-    private int netId;
-    private int retryCnt;
-
-    private ProtoStreamInfo streamInfo;
-    private ProtoStreamConfig streamConfig;
-
-    @Inject
-    public WatchPresenterImpl(WatchView watchView, SocketInteractor socketInteractor, Context context) {
-        this.watchView = watchView;
+    public WatchPresenterImpl(WatchView view, SocketInteractor socketInteractor) {
+        this.view = view;
         this.socketInteractor = socketInteractor;
-        this.context = context;
 
-        Timber.d("WatchPresenterImpl created.");
-    }
-
-    private boolean isConnected() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        if (connectivityManager != null) {
-            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-            return networkInfo != null && networkInfo.getState() == NetworkInfo.State.CONNECTED;
-        }
-
-        return false;
-    }
-
-    @Override
-    public void connectToWifiHost(final WifiHostInformation hostInformation) {
-        //BachApp.getInstance().registerWifiWatchBroadcastReceiver();
-        //BachApp.getInstance().getWatchBroadcastReceiver().setWatchPresenter(this);
-
-        wifiManager = (WifiManager) context.getSystemService(context.WIFI_SERVICE);
-        wifiManager.disconnect(); // Disconnect from current network
-
-        WifiConfiguration wifiConfiguration = new WifiConfiguration();
-        wifiConfiguration.SSID = String.format("\"%s\"", hostInformation.getNetworkName());
-        wifiConfiguration.preSharedKey = String.format("\"%s\"", hostInformation.getPassphrase());
-
-        // watchView.updateProgressText("Connecting to: " + hostInformation.getNetworkName() + "...");
-
-        netId = wifiManager.addNetwork(wifiConfiguration);
-        wifiManager.enableNetwork(netId, false);
-        wifiManager.reconnect();
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (!isConnected()) ;
-
-                initMediaTransport(hostInformation);
-
-                Timber.d("Successfully connected to: " + hostInformation.getNetworkName());
-                Timber.d("Device IP: " + Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress()));
-                Timber.d("Link speed: " + wifiManager.getConnectionInfo().getLinkSpeed());
-            }
-        }).start();
-    }
-
-    @Override
-    public void initMediaTransport(WifiHostInformation hostInformation) {
-        Timber.d("Initializing media transport socket.");
-
-        // watchView.updateProgressText("Initializing media transport socket...");
-
-        MediaSocket mediaSocket = new MediaSocket();
-
-        try {
-            mediaSocket.setDestinationIp(InetAddress.getByName(hostInformation.getDeviceIpAddress()));
-            mediaSocket.setDestinationPort(hostInformation.getDevicePortAsInt());
-
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        socketInteractor.startSender(mediaSocket);
-        socketInteractor.startReceiver(mediaSocket, this);
-
-        //setStateLegacy(new HelloState());
-
-//        socketInteractor.send(new ProtoMessage(ProtoMessageType.HELLO_REQUEST), new DatagramSentListener() {
-//            @Override
-//            public void onSuccess() {
-//                Timber.d("HelloRequest sent.");
-//            }
-//
-//            @Override
-//            public void onError() {
-//                if (retryCnt == 5) {
-//                    // watchView.updateProgressText("Host. unreachable. Closing...");
-//                    Timber.d("Host unreachable. Closing...");
-//
-//                    return;
-//                }
-//
-//                try {
-//                    Timber.d("HelloRequest failed. Retrying in 2 seconds.");
-//
-//                    Thread.sleep(2000);
-//                    retryCnt += 1;
-//
-//                    socketInteractor.send(new ProtoMessage(ProtoMessageType.HELLO_REQUEST), this);
-//
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
-
-        // watchView.updateProgressText("Pinging host...");
-        Timber.d("Current stateLegacy: 'Hello'.");
-    }
-
-    @Override
-    public void closeOpenConnections() {
-        socketInteractor.stopReceiver();
-        socketInteractor.stopSender();
-
-        if (wifiManager != null) {
-            wifiManager.disconnect();
-            wifiManager.removeNetwork(netId);
-        }
-    }
-
-    @Override
-    public void updateView(WatchView view) {
-        watchView = view;
-    }
-
-    @Override
-    public void sendData(ProtoMessage data, DatagramSentListener listener) {
-        socketInteractor.send(data, listener);
-    }
-
-//    /**
-//     * Socket callback.
-//     *
-//     * @param data Instance of ReceivedPacket.
-//     */
-//    @Override
-//    public void onSuccess(ReceivedPacket data) {
-//        if (stateLegacy != null && data.getPayload() instanceof ProtoMessage) {
-//            stateLegacy.process(data, this);
-//        }
-//    }
-//
-//    /**
-//     * Socket callback.
-//     */
-//    @Override
-//    public void onError() {
-//
-//    }
-
-//    public void setStateLegacy(StateLegacy stateLegacy) {
-//        this.stateLegacy = stateLegacy;
-//    }
-
-    public ProtoStreamInfo getStreamInfo() {
-        return streamInfo;
-    }
-
-    public void setStreamInfo(ProtoStreamInfo streamInfo) {
-        this.streamInfo = streamInfo;
-    }
-
-    public ProtoStreamConfig getStreamConfig() {
-        return streamConfig;
-    }
-
-    public void setStreamConfig(ProtoStreamConfig streamConfig) {
-        this.streamConfig = streamConfig;
+        updateSocketCallback();
     }
 
     @Override
     public void handleDatagram(ReceivedPacket data) {
+        if (data.getPayload() instanceof ProtoMessage) {
+            ProtoMessage message = (ProtoMessage) data.getPayload();
 
+            switch (message.getId()) {
+                case ProtoMessageType.MULTIMEDIA:
+                    if (currState.equals(State.STREAMING_STATE)) {
+                        Timber.i("[STREAMING_STATE] Frame received!");
+                        view.updateFrame(((ProtoMultimedia) message).getFrameAsBitmap());
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public void sendMessage(ProtoMessage message, DatagramSentListener callback) {
+        socketInteractor.send(message, callback);
+    }
+
+    @Override
+    public void updateProgressText(String progress) {
+        // No progress text
+    }
+
+    @Override
+    public void sendClientReady() {
+        sendMessage(new ProtoMessage(ProtoMessageType.CLIENT_READY), new DatagramSentListener(this) {
+            @Override
+            public void onSuccess() {
+                Timber.d("[STREAM_CONFIG_STATE] ClientReady sent.");
+                currState = State.STREAMING_STATE;
+            }
+        });
+    }
+
+    @Override
+    public void updateFrame(Bitmap frame) {
+        view.updateFrame(frame);
+    }
+
+    private void updateSocketCallback() {
+        Timber.d("Updating socket callback...");
+        socketInteractor.updateReceiverCallback(this);
     }
 }

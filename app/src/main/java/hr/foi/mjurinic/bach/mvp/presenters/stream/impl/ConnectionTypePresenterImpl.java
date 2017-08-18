@@ -109,10 +109,7 @@ public class ConnectionTypePresenterImpl implements ConnectionTypePresenter, Soc
                         Timber.d("Received HelloRequest.");
                         handleHelloRequest(packet);
                     }
-                    break;
 
-                case ProtoMessageType.STREAM_INFO_REQUEST:
-                    Timber.d("Imam ga...");
                     break;
 
                 default:
