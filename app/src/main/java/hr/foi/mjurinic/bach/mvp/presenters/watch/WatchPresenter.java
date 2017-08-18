@@ -1,19 +1,12 @@
 package hr.foi.mjurinic.bach.mvp.presenters.watch;
 
-import hr.foi.mjurinic.bach.listeners.DatagramSentListener;
-import hr.foi.mjurinic.bach.models.WifiHostInformation;
-import hr.foi.mjurinic.bach.mvp.views.WatchView;
-import hr.foi.mjurinic.bach.network.protocol.ProtoMessage;
+import android.graphics.Bitmap;
 
-public interface WatchPresenter {
+import hr.foi.mjurinic.bach.mvp.presenters.BasePresenter;
 
-    void connectToWifiHost(WifiHostInformation hostInformation);
+public interface WatchPresenter extends BasePresenter {
 
-    void initMediaTransport(WifiHostInformation hostInformation);
+    void sendClientReady();
 
-    void closeOpenConnections();
-
-    void updateView(WatchView view);
-
-    void sendData(ProtoMessage data, DatagramSentListener listener);
+    void updateFrame(Bitmap frame);
 }

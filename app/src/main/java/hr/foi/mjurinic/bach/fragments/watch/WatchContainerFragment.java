@@ -23,7 +23,7 @@ public class WatchContainerFragment extends BaseFragment {
 
     @Override
     protected int getViewStubLayoutResource() {
-        return R.layout.fragment_watch;
+        return R.layout.fragment_watch_container;
     }
 
     @Override
@@ -53,6 +53,7 @@ public class WatchContainerFragment extends BaseFragment {
     private void initFragments() {
         fragments = new ArrayList<>();
         fragments.add(new QrScannerFragment());
+        fragments.add(new WatchFragment());
     }
 
     public void changeActiveFragment(int position) {

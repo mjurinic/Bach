@@ -12,7 +12,7 @@ import hr.foi.mjurinic.bach.models.ReceivedPacket;
 import hr.foi.mjurinic.bach.models.WifiHostInformation;
 import hr.foi.mjurinic.bach.mvp.interactors.SocketInteractor;
 import hr.foi.mjurinic.bach.mvp.presenters.watch.QrScannerPresenter;
-import hr.foi.mjurinic.bach.mvp.views.BaseView;
+import hr.foi.mjurinic.bach.mvp.views.QrScannerView;
 import hr.foi.mjurinic.bach.network.MediaSocket;
 import hr.foi.mjurinic.bach.network.protocol.ProtoMessage;
 import hr.foi.mjurinic.bach.network.protocol.ProtoMessageType;
@@ -24,13 +24,13 @@ import timber.log.Timber;
 public class QrScannerPresenterImpl implements QrScannerPresenter, SocketListener {
 
     private SocketInteractor socketInteractor;
-    private BaseView view;
+    private QrScannerView view;
     private ProtoStreamInfo streamInfo;
     private int lastConfigIndex;
     private String currState = State.HELLO_STATE;
 
     @Inject
-    public QrScannerPresenterImpl(SocketInteractor socketInteractor, BaseView view) {
+    public QrScannerPresenterImpl(SocketInteractor socketInteractor, QrScannerView view) {
         this.socketInteractor = socketInteractor;
         this.view = view;
     }
@@ -93,7 +93,7 @@ public class QrScannerPresenterImpl implements QrScannerPresenter, SocketListene
                 case ProtoMessageType.STREAM_CONFIG_RESPONSE_OK:
                     if (currState.equals(State.STREAM_CONFIG_STATE)) {
                         Timber.d("Received StreamConfigResponse: OK!");
-                        // TODO next fragment
+                        view.nextFragment();
                     }
                     break;
 
