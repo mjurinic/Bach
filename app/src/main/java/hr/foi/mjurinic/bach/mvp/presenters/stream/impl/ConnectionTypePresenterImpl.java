@@ -2,8 +2,9 @@ package hr.foi.mjurinic.bach.mvp.presenters.stream.impl;
 
 import android.graphics.Bitmap;
 import android.support.v4.content.res.ResourcesCompat;
+import android.util.Base64;
 
-import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
@@ -31,6 +32,7 @@ public class ConnectionTypePresenterImpl implements ConnectionTypePresenter, Soc
     private ConnectionTypeView view;
     private MediaSocket mediaSocket;
     private String currState = State.HELLO_STATE;
+    private boolean isAccessPointCreated = false;
 
     public ConnectionTypePresenterImpl(SocketInteractor socketInteractor, ConnectionTypeView view) {
         this.socketInteractor = socketInteractor;
@@ -43,6 +45,8 @@ public class ConnectionTypePresenterImpl implements ConnectionTypePresenter, Soc
         view.updateProgressText("Initializing media transport socket...");
 
         mediaSocket = new MediaSocket();
+        mediaSocket.setKey(Base64.decode(hostInformation.getB64AESkey(), Base64.NO_WRAP));
+
         socketInteractor.startReceiver(mediaSocket, this);
 
         hostInformation.setDevicePort(String.valueOf(mediaSocket.getPort()));
@@ -62,7 +66,7 @@ public class ConnectionTypePresenterImpl implements ConnectionTypePresenter, Soc
         int black = ResourcesCompat.getColor(BachApp.getInstance().getApplicationContext().getResources(), android.R.color.black, null);
 
         try {
-            String payload = new Gson().toJson(wifiHostInformation);
+            String payload = new GsonBuilder().disableHtmlEscaping().create().toJson(wifiHostInformation);
             result = new MultiFormatWriter().encode(payload, BarcodeFormat.QR_CODE, width, height, null);
 
             Timber.d(payload);
@@ -130,5 +134,13 @@ public class ConnectionTypePresenterImpl implements ConnectionTypePresenter, Soc
                 view.nextFragment();
             }
         });
+    }
+
+    public boolean isAccessPointCreated() {
+        return isAccessPointCreated;
+    }
+
+    public void setAccessPointCreated(boolean accessPointCreated) {
+        isAccessPointCreated = accessPointCreated;
     }
 }

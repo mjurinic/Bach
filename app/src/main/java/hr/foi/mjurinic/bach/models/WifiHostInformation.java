@@ -7,6 +7,7 @@ public class WifiHostInformation {
     private String deviceMacAddress;
     private String deviceIpAddress;
     private String devicePort;
+    private String b64AESkey;
 
     public WifiHostInformation() {
     }
@@ -59,5 +60,13 @@ public class WifiHostInformation {
 
     public void setDevicePort(String devicePort) {
         this.devicePort = devicePort;
+    }
+
+    public String getB64AESkey() {
+        return b64AESkey;
+    }
+
+    public void setB64AESkey(String b64AESkey) {
+        this.b64AESkey = b64AESkey;
     }
 }

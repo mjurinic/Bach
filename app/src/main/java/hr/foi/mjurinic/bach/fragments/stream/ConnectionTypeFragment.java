@@ -19,8 +19,6 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Map;
 
 import hr.foi.mjurinic.bach.BachApp;
@@ -69,6 +67,8 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
 
         connectionTypePresenter = new ConnectionTypePresenterImpl(
                 ((StreamContainerFragment) getParentFragment()).getSocketInteractor(), this);
+
+        ((ConnectionTypePresenterImpl) connectionTypePresenter).setAccessPointCreated(false);
     }
 
     @Override
@@ -120,6 +120,8 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
 
         Timber.d("Closing Wi-Fi P2P access point...");
         disconnect();
+
+        ((ConnectionTypePresenterImpl) connectionTypePresenter).setAccessPointCreated(false);
     }
 
     private void disconnect() {
@@ -127,8 +129,7 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
             wifiManager.requestGroupInfo(wifiChannel, new WifiP2pManager.GroupInfoListener() {
                 @Override
                 public void onGroupInfoAvailable(WifiP2pGroup group) {
-                    if (group != null && wifiManager != null && wifiChannel != null
-                            && group.isGroupOwner()) {
+                    if (group != null && wifiManager != null && wifiChannel != null && group.isGroupOwner()) {
                         wifiManager.removeGroup(wifiChannel, new WifiP2pManager.ActionListener() {
 
                             @Override
@@ -144,23 +145,6 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
                     }
                 }
             });
-        }
-    }
-
-    private void deletePersistentGroups() {
-        Method[] methods = WifiP2pManager.class.getMethods();
-
-        for (Method method : methods) {
-            if (method.getName().equals("deletePersistentGroup")) {
-                for (int i = 0; i < 32; ++i) {
-                    try {
-                        method.invoke(wifiManager, wifiChannel, i, null);
-
-                    } catch (IllegalAccessException | InvocationTargetException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
         }
     }
 
