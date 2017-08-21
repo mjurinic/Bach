@@ -8,8 +8,10 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.Arrays;
 import java.util.Enumeration;
 
+import hr.foi.mjurinic.bach.helpers.Crypto;
 import hr.foi.mjurinic.bach.helpers.Serializator;
 import hr.foi.mjurinic.bach.models.ReceivedPacket;
 import timber.log.Timber;
@@ -23,6 +25,7 @@ public class MediaSocket {
     private int port;
     private InetAddress destinationIp;
     private int destinationPort;
+    private byte[] key;
 
     public MediaSocket() {
         try {
@@ -37,11 +40,12 @@ public class MediaSocket {
 
     public boolean send(Object obj) {
         byte[] data = Serializator.serialize(obj);
+        byte[] encrypted = Crypto.encrypt(data, key);
 
-        if (data != null) {
-            DatagramPacket packet = new DatagramPacket(data, data.length, destinationIp, destinationPort);
+        if (data != null && encrypted != null) {
+            DatagramPacket packet = new DatagramPacket(encrypted, encrypted.length, destinationIp, destinationPort);
 
-            Timber.d("Sending packet to: " + destinationIp.getHostAddress() + ":" + destinationPort);
+            Timber.i("Sending packet to: " + destinationIp.getHostAddress() + ":" + destinationPort);
 
             try {
                 socket.send(packet);
@@ -61,19 +65,47 @@ public class MediaSocket {
 
     @Nullable
     public ReceivedPacket receive() {
-        byte[] data = new byte[64000];
-        DatagramPacket packet = new DatagramPacket(data, data.length);
+        byte[] buffer = new byte[64000];
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 
         try {
             socket.setSoTimeout(TIMEOUT);
             socket.receive(packet);
 
-            Timber.d("Received packet from: " + packet.getAddress().getHostAddress() + ":" + packet.getPort());
+            Timber.i("Received packet from: " + packet.getAddress().getHostAddress() + ":" + packet.getPort());
 
-            return new ReceivedPacket(packet.getAddress(), packet.getPort(), Serializator.deserialize(data));
+            byte[] encrypted = Arrays.copyOfRange(buffer, 0, packet.getLength());
+            byte[] decrypted = Crypto.decrypt(encrypted, key);
+
+            return new ReceivedPacket(packet.getAddress(), packet.getPort(), Serializator.deserialize(decrypted));
 
         } catch (IOException e) {
             // e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    @Nullable
+    private static InetAddress getLocalAddress() {
+        try {
+            Enumeration e = NetworkInterface.getNetworkInterfaces();
+
+            while (e.hasMoreElements()) {
+                NetworkInterface n = (NetworkInterface) e.nextElement();
+                Enumeration ee = n.getInetAddresses();
+
+                while (ee.hasMoreElements()) {
+                    InetAddress i = (InetAddress) ee.nextElement();
+                    String substr = (i.getHostAddress()).substring(0, 3);
+
+                    if (!substr.equals("127") && !substr.equals("0:0") && !substr.equals("fe8")) {
+                        return i;
+                    }
+                }
+            }
+        } catch (SocketException e1) {
+            e1.printStackTrace();
         }
 
         return null;
@@ -112,28 +144,11 @@ public class MediaSocket {
         this.destinationPort = destinationPort;
     }
 
-    @Nullable
-    private static InetAddress getLocalAddress() {
-        try {
-            Enumeration e = NetworkInterface.getNetworkInterfaces();
+    public byte[] getKey() {
+        return key;
+    }
 
-            while (e.hasMoreElements()) {
-                NetworkInterface n = (NetworkInterface) e.nextElement();
-                Enumeration ee = n.getInetAddresses();
-
-                while (ee.hasMoreElements()) {
-                    InetAddress i = (InetAddress) ee.nextElement();
-                    String substr = (i.getHostAddress()).substring(0, 3);
-
-                    if (!substr.equals("127") && !substr.equals("0:0") && !substr.equals("fe8")) {
-                        return i;
-                    }
-                }
-            }
-        } catch (SocketException e1) {
-            e1.printStackTrace();
-        }
-
-        return null;
+    public void setKey(byte[] key) {
+        this.key = key;
     }
 }

@@ -1,5 +1,7 @@
 package hr.foi.mjurinic.bach.mvp.presenters.watch.impl;
 
+import android.util.Base64;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -41,6 +43,7 @@ public class QrScannerPresenterImpl implements QrScannerPresenter, SocketListene
         updateProgressText("Initializing media transport socket...");
 
         MediaSocket mediaSocket = new MediaSocket();
+        mediaSocket.setKey(Base64.decode(hostInformation.getB64AESkey(), Base64.NO_WRAP));
 
         try {
             mediaSocket.setDestinationIp(InetAddress.getByName(hostInformation.getDeviceIpAddress()));

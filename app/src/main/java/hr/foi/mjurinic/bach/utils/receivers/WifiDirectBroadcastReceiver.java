@@ -6,9 +6,12 @@ import android.content.Intent;
 import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.util.Base64;
 
+import hr.foi.mjurinic.bach.helpers.Crypto;
 import hr.foi.mjurinic.bach.models.WifiHostInformation;
 import hr.foi.mjurinic.bach.mvp.presenters.stream.ConnectionTypePresenter;
+import hr.foi.mjurinic.bach.mvp.presenters.stream.impl.ConnectionTypePresenterImpl;
 
 public class WifiDirectBroadcastReceiver extends BroadcastReceiver {
 
@@ -29,7 +32,9 @@ public class WifiDirectBroadcastReceiver extends BroadcastReceiver {
                 wifiManager.requestGroupInfo(wifiChannel, new WifiP2pManager.GroupInfoListener() {
                     @Override
                     public void onGroupInfoAvailable(WifiP2pGroup group) {
-                        if (group != null) {
+                        if (group != null && !((ConnectionTypePresenterImpl) presenter).isAccessPointCreated()) {
+                            ((ConnectionTypePresenterImpl) presenter).setAccessPointCreated(true);
+
                             final WifiHostInformation wifiHostInformation = new WifiHostInformation();
 
                             wifiManager.requestConnectionInfo(wifiChannel, new WifiP2pManager.ConnectionInfoListener() {
@@ -42,6 +47,7 @@ public class WifiDirectBroadcastReceiver extends BroadcastReceiver {
                             wifiHostInformation.setNetworkName(group.getNetworkName());
                             wifiHostInformation.setPassphrase(group.getPassphrase());
                             wifiHostInformation.setDeviceMacAddress(group.getOwner().deviceAddress);
+                            wifiHostInformation.setB64AESkey(Base64.encodeToString(Crypto.generateKey(), Base64.NO_WRAP));
 
                             presenter.initSocketLayer(wifiHostInformation);
                         }
