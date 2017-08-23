@@ -125,7 +125,7 @@ public class StreamFragment extends BaseFragment implements StreamView {
         streamPresenter.sendMessage(new ProtoMultimedia(frame, !isBackCameraActive), new DatagramSentListener(streamPresenter, 5) {
             @Override
             public void onSuccess() {
-                Timber.i("Frame sent!");
+                // Timber.i("Frame sent!");
             }
         });
     }

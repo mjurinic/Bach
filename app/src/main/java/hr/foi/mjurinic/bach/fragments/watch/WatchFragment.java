@@ -12,7 +12,6 @@ import hr.foi.mjurinic.bach.mvp.presenters.watch.WatchPresenter;
 import hr.foi.mjurinic.bach.mvp.presenters.watch.impl.WatchPresenterImpl;
 import hr.foi.mjurinic.bach.mvp.views.WatchView;
 import hr.foi.mjurinic.bach.network.protocol.ProtoMultimedia;
-import timber.log.Timber;
 
 public class WatchFragment extends BaseFragment implements WatchView {
 
@@ -33,17 +32,15 @@ public class WatchFragment extends BaseFragment implements WatchView {
     }
 
     @Override
-    public void updateFrame(final ProtoMultimedia multimedia) {
+    public void updateFrame(ProtoMultimedia multimedia) {
+        final Matrix matrix = new Matrix();
+        matrix.postRotate(multimedia.isFrontCameraFrame() ? 270 : 90);
+
+        final Bitmap frame = multimedia.getFrameAsBitmap();
+
         getBaseActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Matrix matrix = new Matrix();
-                matrix.postRotate(multimedia.isFrontCameraFrame() ? 270 : 90);
-
-                Timber.d("isFrontCamera? " + multimedia.isFrontCameraFrame());
-
-                Bitmap frame = multimedia.getFrameAsBitmap();
-
                 streamPreview.setImageBitmap(Bitmap.createBitmap(frame, 0, 0, frame.getWidth(), frame.getHeight(), matrix, true));
             }
         });
