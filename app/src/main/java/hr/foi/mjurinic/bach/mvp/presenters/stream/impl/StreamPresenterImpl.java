@@ -94,11 +94,14 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
         Timber.d("Requested resolution: " + payload.getResolution().getWidth() + "x" + payload.getResolution().getHeight());
         Timber.d("Requested FPS: " + payload.getFpsRange()[0] + " - " + payload.getFpsRange()[1]);
 
+        ProtoStreamInfo.CameraInfo cameraInfo =
+                streamInfo.getFrontCameraInfo() != null ? streamInfo.getFrontCameraInfo() : streamInfo.getBackCameraInfo();
+
         boolean checkConfig = false;
 
-        for (CameraSize resolution : streamInfo.getResolutions()) {
+        for (CameraSize resolution : cameraInfo.getResolutions()) {
             if (resolution.equals(payload.getResolution())) {
-                for (int[] fpsRange : streamInfo.getSupportedFpsRange()) {
+                for (int[] fpsRange : cameraInfo.getSupportedFpsRange()) {
                     Timber.d(fpsRange.toString() + " ][ " + payload.getFpsRange().toString());
 
                     if (Arrays.equals(fpsRange, payload.getFpsRange())) {

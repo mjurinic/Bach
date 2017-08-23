@@ -32,7 +32,7 @@ public class WatchFragment extends BaseFragment implements WatchView {
     }
 
     @Override
-    public void updateFrame(ProtoMultimedia multimedia) {
+    public void updateFrame(final ProtoMultimedia multimedia) {
         final Matrix matrix = new Matrix();
         matrix.postRotate(multimedia.isFrontCameraFrame() ? 270 : 90);
 

@@ -1,25 +1,44 @@
 package hr.foi.mjurinic.bach.network.protocol;
 
+import java.io.Serializable;
 import java.util.List;
 
 import hr.foi.mjurinic.bach.models.CameraSize;
 
 public class ProtoStreamInfo extends ProtoMessage {
 
-    private List<CameraSize> resolutions;
-    private List<int[]> supportedFpsRange;
+    private CameraInfo frontCameraInfo;
+    private CameraInfo backCameraInfo;
 
-    public ProtoStreamInfo(List<CameraSize> resolutions, List<int[]> supportedFpsRange) {
+    public ProtoStreamInfo(CameraInfo frontCameraInfo, CameraInfo backCameraInfo) {
         super.id = ProtoMessageType.STREAM_INFO_RESPONSE;
-        this.resolutions = resolutions;
-        this.supportedFpsRange = supportedFpsRange;
+        this.frontCameraInfo = frontCameraInfo;
+        this.backCameraInfo = backCameraInfo;
     }
 
-    public List<CameraSize> getResolutions() {
-        return resolutions;
+    public CameraInfo getFrontCameraInfo() {
+        return frontCameraInfo;
     }
 
-    public List<int[]> getSupportedFpsRange() {
-        return supportedFpsRange;
+    public CameraInfo getBackCameraInfo() {
+        return backCameraInfo;
+    }
+
+    public static class CameraInfo implements Serializable {
+        private List<CameraSize> resolutions;
+        private List<int[]> supportedFpsRange;
+
+        public CameraInfo(List<CameraSize> resolutions, List<int[]> supportedFpsRange) {
+            this.resolutions = resolutions;
+            this.supportedFpsRange = supportedFpsRange;
+        }
+
+        public List<CameraSize> getResolutions() {
+            return resolutions;
+        }
+
+        public List<int[]> getSupportedFpsRange() {
+            return supportedFpsRange;
+        }
     }
 }

@@ -65,7 +65,7 @@ public class StreamFragment extends BaseFragment implements StreamView {
         bindViews(inflatedView);
 
         identifyCameras();
-        initCamera(cameraFrontId != -1 ? cameraFrontId : cameraBackId);
+        // initCamera(cameraFrontId != -1 ? cameraFrontId : cameraBackId);
     }
 
     @Override
@@ -124,26 +124,46 @@ public class StreamFragment extends BaseFragment implements StreamView {
         // No re-sends on multimedia messages!
         streamPresenter.sendMessage(new ProtoMultimedia(frame, !isBackCameraActive), new DatagramSentListener(streamPresenter, 5) {
             @Override
-            public void onSuccess() {
-                // Timber.i("Frame sent!");
-            }
+            public void onSuccess() {}
         });
     }
 
     @Override
     public ProtoStreamInfo provideCameraInfo() {
+        ProtoStreamInfo.CameraInfo frontCameraInfo = null;
+        ProtoStreamInfo.CameraInfo backCameraInfo;
+
+        // Gather back camera info first.
+        initCamera(cameraBackId);
+        isBackCameraActive = true;
+
+        backCameraInfo = gatherCameraInfo(camera);
+
+        // If front camera exists, gather its info and leave it initialized.
+        if (cameraFrontId != -1) {
+            releaseCamera();
+            isBackCameraActive = false;
+
+            initCamera(cameraFrontId);
+            frontCameraInfo = gatherCameraInfo(camera);
+        }
+
+        return new ProtoStreamInfo(frontCameraInfo, backCameraInfo);
+    }
+
+    @Override
+    public void updateProgressText(String progress) {
+        tvProgress.setText(progress);
+    }
+
+    private ProtoStreamInfo.CameraInfo gatherCameraInfo(Camera camera) {
         List<CameraSize> resolutions = new ArrayList<>();
 
         for (Camera.Size size : camera.getParameters().getSupportedPictureSizes()) {
             resolutions.add(new CameraSize(size.width, size.height));
         }
 
-        return new ProtoStreamInfo(resolutions, camera.getParameters().getSupportedPreviewFpsRange());
-    }
-
-    @Override
-    public void updateProgressText(String progress) {
-        tvProgress.setText(progress);
+        return new ProtoStreamInfo.CameraInfo(resolutions, camera.getParameters().getSupportedPreviewFpsRange());
     }
 
     private void initSurfaceView() {
@@ -158,8 +178,6 @@ public class StreamFragment extends BaseFragment implements StreamView {
             camera.setDisplayOrientation(90);
 
             isBackCameraActive = (cameraId == cameraBackId);
-
-            Timber.d("isCameraPreviewVisible: " + isCameraPreviewVisible);
 
             if (isCameraPreviewVisible) {
                 Camera.Parameters params = camera.getParameters();
@@ -256,9 +274,15 @@ public class StreamFragment extends BaseFragment implements StreamView {
     }
 
     private void releaseCamera() {
-        if (cameraPreview != null) {
-            cameraPreview.removeAllViews();
-        }
+        // Threading issues during "StreamInfoState".
+        getBaseActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (cameraPreview != null) {
+                    cameraPreview.removeAllViews();
+                }
+            }
+        });
 
         if (camera != null) {
             camera.setPreviewCallback(null);

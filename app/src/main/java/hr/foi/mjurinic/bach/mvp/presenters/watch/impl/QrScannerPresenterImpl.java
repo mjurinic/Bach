@@ -30,6 +30,7 @@ public class QrScannerPresenterImpl implements QrScannerPresenter, SocketListene
     private ProtoStreamInfo streamInfo;
     private int lastConfigIndex;
     private String currState = State.HELLO_STATE;
+    private ProtoStreamInfo.CameraInfo cameraInfo;
 
     @Inject
     public QrScannerPresenterImpl(SocketInteractor socketInteractor, QrScannerView view) {
@@ -156,14 +157,17 @@ public class QrScannerPresenterImpl implements QrScannerPresenter, SocketListene
         updateProgressText("Configuring stream parameters...");
 
         this.streamInfo = streamInfo;
+        cameraInfo = streamInfo.getFrontCameraInfo() != null ? streamInfo.getFrontCameraInfo() : streamInfo.getBackCameraInfo();
 
-        for (CameraSize size : streamInfo.getResolutions()) {
+        Timber.d("Displaying " + (streamInfo.getFrontCameraInfo() != null ? "front camera info..." : "back camera info..."));
+
+        for (CameraSize size : cameraInfo.getResolutions()) {
             Timber.d("\t[*] " + size.getWidth() + "x" + size.getHeight());
         }
 
         Timber.d("Fps range: ");
 
-        for (int[] fps : streamInfo.getSupportedFpsRange()) {
+        for (int[] fps : cameraInfo.getSupportedFpsRange()) {
             Timber.d("\t[*] " + fps[0] + " - " + fps[1]);
         }
 
@@ -180,14 +184,14 @@ public class QrScannerPresenterImpl implements QrScannerPresenter, SocketListene
         // options by "niceness". In case first config request fails just choose
         // the next configuration from the list.
 
-        if (configPosition == streamInfo.getResolutions().size()) {
+        if (configPosition == cameraInfo.getResolutions().size()) {
             updateProgressText("Whoops! Couldn't find a working stream configuration.");
             return;
         }
 
         ProtoMessage streamConfigRequest = new ProtoStreamConfig(
-                streamInfo.getResolutions().get(configPosition),
-                streamInfo.getSupportedFpsRange().get(0) // Always one possible value for FPS range?
+                cameraInfo.getResolutions().get(configPosition),
+                cameraInfo.getSupportedFpsRange().get(0) // Always one possible value for FPS range?
         );
 
         sendMessage(streamConfigRequest, new DatagramSentListener(this) {
