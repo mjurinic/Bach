@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -27,15 +29,20 @@ import timber.log.Timber;
 public class StreamFragment extends BaseFragment implements StreamView {
 
     // Views
-    private Toolbar toolbar;
+    private Toolbar toolbarPrimaryColor;
     private TextView tvProgress;
     private FrameLayout cameraPreview;
+    private LinearLayout toolbarLayout;
     private RelativeLayout streamProgressLayout;
+    private ImageView ivFlash;
+    private ImageView ivCameraSwitch;
 
     // Camera
     private Camera camera;
     private CameraPreviewSurfaceView surfaceView;
     private boolean isBackCameraActive;
+    private boolean isFlashActive;
+    private boolean isCameraPreviewVisible;
     private int cameraFrontId = -1;
     private int cameraBackId = 0;
 
@@ -54,20 +61,40 @@ public class StreamFragment extends BaseFragment implements StreamView {
         streamPresenter = new StreamPresenterImpl(this, ((StreamContainerFragment) getParentFragment()).getSocketInteractor());
         view = this;
 
+        setHasOptionsMenu(true);
         bindViews(inflatedView);
-        initCamera(0);
+
+        identifyCameras();
+        initCamera(cameraFrontId != -1 ? cameraFrontId : cameraBackId);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (camera == null) {
+            if (cameraBackId == -1 && cameraFrontId == -1) {
+                identifyCameras();
+            }
+
+            initCamera(isBackCameraActive ? cameraBackId : cameraFrontId);
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
+
         releaseCamera();
+        isCameraPreviewVisible = false;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+
         releaseCamera();
+        isCameraPreviewVisible = false;
     }
 
     @Override
@@ -81,12 +108,13 @@ public class StreamFragment extends BaseFragment implements StreamView {
         getBaseActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                surfaceView = new CameraPreviewSurfaceView(getBaseActivity().getApplicationContext(), camera, view);
-                cameraPreview.addView(surfaceView);
+                initSurfaceView();
 
-                toolbar.setVisibility(View.GONE);
+                toolbarPrimaryColor.setVisibility(View.GONE);
                 streamProgressLayout.setVisibility(View.GONE);
+
                 cameraPreview.setVisibility(View.VISIBLE);
+                toolbarLayout.setVisibility(View.VISIBLE);
             }
         });
     }
@@ -118,12 +146,24 @@ public class StreamFragment extends BaseFragment implements StreamView {
         tvProgress.setText(progress);
     }
 
+    private void initSurfaceView() {
+        surfaceView = new CameraPreviewSurfaceView(getBaseActivity().getApplicationContext(), camera, view);
+        cameraPreview.addView(surfaceView);
+        isCameraPreviewVisible = true;
+    }
+
     private boolean initCamera(int cameraId) {
         try {
             camera = Camera.open(cameraId);
             camera.setDisplayOrientation(90);
 
             isBackCameraActive = (cameraId == cameraBackId);
+
+            Timber.d("isCameraPreviewVisible: " + isCameraPreviewVisible);
+
+            if (isCameraPreviewVisible) {
+                initSurfaceView();
+            }
 
             return true;
 
@@ -132,6 +172,81 @@ public class StreamFragment extends BaseFragment implements StreamView {
         }
 
         return false;
+    }
+
+    private boolean hasFlash() {
+        List<String> flashModes = camera.getParameters().getSupportedFlashModes();
+
+        if (flashModes != null) {
+            for (String flashMode : flashModes) {
+                if (Camera.Parameters.FLASH_MODE_ON.equals(flashMode)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private void identifyCameras() {
+        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+
+        for (int i = 0; i < Camera.getNumberOfCameras(); ++i) {
+            Camera.getCameraInfo(i, cameraInfo);
+
+            if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                cameraFrontId = i;
+
+            } else if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
+                cameraBackId = i;
+            }
+        }
+
+        Timber.d("Front cameraId: " + cameraFrontId);
+        Timber.d("Back cameraId: " + cameraBackId);
+    }
+
+    private void flashOff() {
+        Camera.Parameters params = camera.getParameters();
+        params.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+
+        toggleFlashIcons();
+
+        // TODO possible rotation fuckup
+        camera.setParameters(params);
+
+        isFlashActive = false;
+    }
+
+    private void onToggleFlashClick() {
+        if (hasFlash()) {
+            Camera.Parameters params = camera.getParameters();
+            params.setFlashMode(isFlashActive ? Camera.Parameters.FLASH_MODE_OFF : Camera.Parameters.FLASH_MODE_TORCH);
+
+            camera.setParameters(params);
+
+            isFlashActive = !isFlashActive;
+
+            toggleFlashIcons();
+        }
+    }
+
+    private void toggleFlashIcons() {
+        ivFlash.setBackground(isFlashActive ?
+                getResources().getDrawable(R.drawable.ic_flash_on_white_48dp) :
+                getResources().getDrawable(R.drawable.ic_flash_off_white_48dp));
+    }
+
+    private void onSwitchCamerasClick() {
+        if (cameraFrontId == -1) return;
+
+        if (isFlashActive) {
+            flashOff();
+        }
+
+        releaseCamera();
+
+        initCamera(isBackCameraActive ? cameraFrontId : cameraBackId);
     }
 
     private void releaseCamera() {
@@ -146,11 +261,28 @@ public class StreamFragment extends BaseFragment implements StreamView {
     }
 
     private void bindViews(View view) {
-        toolbar = (Toolbar) view.findViewById(R.id.toolbar_primary_color);
-        toolbar.setTitle("Waiting for Client connection...");
+        toolbarPrimaryColor = (Toolbar) view.findViewById(R.id.toolbar_primary_color);
+        toolbarPrimaryColor.setTitle("Waiting for Client Connection...");
 
+        toolbarLayout = (LinearLayout) view.findViewById(R.id.toolbar_layout);
         tvProgress = (TextView) view.findViewById(R.id.tv_progress);
         cameraPreview = (FrameLayout) view.findViewById(R.id.stream_camera_preview);
         streamProgressLayout = (RelativeLayout) view.findViewById(R.id.stream_progress_layout);
+
+        ivFlash = (ImageView) view.findViewById(R.id.iv_flash);
+        ivFlash.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onToggleFlashClick();
+            }
+        });
+
+        ivCameraSwitch = (ImageView) view.findViewById(R.id.iv_camera_switch);
+        ivCameraSwitch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onSwitchCamerasClick();
+            }
+        });
     }
 }
