@@ -261,6 +261,7 @@ public class StreamFragment extends BaseFragment implements StreamView {
         }
 
         if (camera != null) {
+            camera.setPreviewCallback(null);
             camera.release();
             camera = null;
         }
