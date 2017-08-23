@@ -1,12 +1,11 @@
 package hr.foi.mjurinic.bach.mvp.presenters.watch;
 
-import android.graphics.Bitmap;
-
 import hr.foi.mjurinic.bach.mvp.presenters.BasePresenter;
+import hr.foi.mjurinic.bach.network.protocol.ProtoMultimedia;
 
 public interface WatchPresenter extends BasePresenter {
 
     void sendClientReady();
 
-    void updateFrame(Bitmap frame);
+    void updateFrame(ProtoMultimedia multimedia);
 }

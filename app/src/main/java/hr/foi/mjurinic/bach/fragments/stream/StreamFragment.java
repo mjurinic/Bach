@@ -122,7 +122,7 @@ public class StreamFragment extends BaseFragment implements StreamView {
     @Override
     public void handleFrame(byte[] frame) {
         // No re-sends on multimedia messages!
-        streamPresenter.sendMessage(new ProtoMultimedia(frame), new DatagramSentListener(streamPresenter, 5) {
+        streamPresenter.sendMessage(new ProtoMultimedia(frame, !isBackCameraActive), new DatagramSentListener(streamPresenter, 5) {
             @Override
             public void onSuccess() {
                 Timber.i("Frame sent!");
