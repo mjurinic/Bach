@@ -77,7 +77,10 @@ public class MediaSocket {
             byte[] encrypted = Arrays.copyOfRange(buffer, 0, packet.getLength());
             byte[] decrypted = Crypto.decrypt(encrypted, key);
 
-            return new ReceivedPacket(packet.getAddress(), packet.getPort(), Serializator.deserialize(decrypted));
+            // TODO wtf
+            if (decrypted != null) {
+                return new ReceivedPacket(packet.getAddress(), packet.getPort(), Serializator.deserialize(decrypted));
+            }
 
         } catch (IOException e) {
             // e.printStackTrace();

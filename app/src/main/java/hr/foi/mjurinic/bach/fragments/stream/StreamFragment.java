@@ -84,7 +84,6 @@ public class StreamFragment extends BaseFragment implements StreamView {
     @Override
     public void onPause() {
         super.onPause();
-
         releaseCamera();
         isCameraPreviewVisible = false;
     }
@@ -92,18 +91,19 @@ public class StreamFragment extends BaseFragment implements StreamView {
     @Override
     public void onDestroy() {
         super.onDestroy();
-
         releaseCamera();
         isCameraPreviewVisible = false;
     }
 
     @Override
     public void showCameraPreview(ProtoStreamConfig streamConfig) {
-        Camera.Parameters camParams = camera.getParameters();
-        // camParams.setPreviewSize(streamConfig.getResolution().getWidth(), streamConfig.getResolution().getHeight());
+        Camera.Parameters params = camera.getParameters();
 
-        camParams.setPreviewSize(640, 480);
-        camera.setParameters(camParams);
+        // camParams.setPreviewSize(streamConfig.getResolution().getWidth(), streamConfig.getResolution().getHeight());
+        //camParams.setPreviewSize(640, 480);
+        params.setPreviewSize(1280, 720);
+
+        camera.setParameters(params);
 
         getBaseActivity().runOnUiThread(new Runnable() {
             @Override
@@ -162,6 +162,11 @@ public class StreamFragment extends BaseFragment implements StreamView {
             Timber.d("isCameraPreviewVisible: " + isCameraPreviewVisible);
 
             if (isCameraPreviewVisible) {
+                Camera.Parameters params = camera.getParameters();
+                params.setPreviewSize(1280, 720);
+
+                camera.setParameters(params);
+
                 initSurfaceView();
             }
 
@@ -209,11 +214,11 @@ public class StreamFragment extends BaseFragment implements StreamView {
     private void flashOff() {
         Camera.Parameters params = camera.getParameters();
         params.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+        params.setPreviewSize(1280, 720);
+
+        camera.setParameters(params);
 
         toggleFlashIcons();
-
-        // TODO possible rotation fuckup
-        camera.setParameters(params);
 
         isFlashActive = false;
     }
@@ -222,12 +227,13 @@ public class StreamFragment extends BaseFragment implements StreamView {
         if (hasFlash()) {
             Camera.Parameters params = camera.getParameters();
             params.setFlashMode(isFlashActive ? Camera.Parameters.FLASH_MODE_OFF : Camera.Parameters.FLASH_MODE_TORCH);
+            params.setPreviewSize(1280, 720);
 
             camera.setParameters(params);
 
-            isFlashActive = !isFlashActive;
-
             toggleFlashIcons();
+
+            isFlashActive = !isFlashActive;
         }
     }
 
