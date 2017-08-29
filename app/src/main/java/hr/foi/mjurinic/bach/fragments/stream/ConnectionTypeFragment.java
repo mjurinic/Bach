@@ -118,10 +118,9 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
     public void onPause() {
         super.onPause();
 
-        Timber.d("Closing Wi-Fi P2P access point...");
-        disconnect();
-
-        ((ConnectionTypePresenterImpl) connectionTypePresenter).setAccessPointCreated(false);
+        // Timber.d("Closing Wi-Fi P2P access point...");
+        // disconnect();
+        // ((ConnectionTypePresenterImpl) connectionTypePresenter).setAccessPointCreated(false);
     }
 
     public void disconnect() {

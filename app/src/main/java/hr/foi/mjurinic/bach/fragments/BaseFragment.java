@@ -75,4 +75,8 @@ public abstract class BaseFragment extends Fragment {
     protected BaseActivity getBaseActivity() {
         return (BaseActivity) getActivity();
     }
+
+    public boolean isInflated() {
+        return hasInflated;
+    }
 }

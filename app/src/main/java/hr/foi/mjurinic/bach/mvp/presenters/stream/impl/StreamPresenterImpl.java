@@ -37,13 +37,16 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
             @Override
             public void onSuccess() {
                 Timber.d("StreamClose message sent.");
-
                 view.clearComponents();
-
-                socketInteractor.stopSender();
-                socketInteractor.stopReceiver();
+                closeSockets();
             }
         });
+    }
+
+    @Override
+    public void closeSockets() {
+        socketInteractor.stopSender();
+        socketInteractor.stopReceiver();
     }
 
     @Override

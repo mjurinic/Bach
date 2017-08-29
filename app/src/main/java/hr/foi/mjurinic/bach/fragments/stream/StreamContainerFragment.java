@@ -40,16 +40,6 @@ public class StreamContainerFragment extends BaseFragment {
         changeActiveFragment(0);
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        if (socketInteractor != null) {
-            socketInteractor.stopReceiver();
-            socketInteractor.stopSender();
-        }
-    }
-
     private void initFragments() {
         fragments = new ArrayList<>();
         fragments.add(new ConnectionTypeFragment());

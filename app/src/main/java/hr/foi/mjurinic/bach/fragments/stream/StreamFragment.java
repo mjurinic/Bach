@@ -46,12 +46,13 @@ public class StreamFragment extends BaseFragment implements StreamView {
     private CameraPreviewSurfaceView surfaceView;
     private boolean isBackCameraActive;
     private boolean isFlashActive;
-    private boolean isCameraPreviewVisible;
+    private boolean isCameraPreviewVisible; // prevents SurfaceView creation during StreamConfig phase
     private int cameraFrontId = -1;
     private int cameraBackId = 0;
 
     private StreamPresenter streamPresenter;
     private StreamView view;
+    private boolean isStreamActive;
 
     @Override
     protected int getViewStubLayoutResource() {
@@ -69,34 +70,41 @@ public class StreamFragment extends BaseFragment implements StreamView {
         bindViews(inflatedView);
 
         identifyCameras();
-        // initCamera(cameraFrontId != -1 ? cameraFrontId : cameraBackId);
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-//        if (camera == null) {
-//            if (cameraBackId == -1 && cameraFrontId == -1) {
-//                identifyCameras();
-//            }
-//
-//            initCamera(isBackCameraActive ? cameraBackId : cameraFrontId);
-//        }
+        Timber.d("onResume: isInflated? " + super.isInflated());
+
+        if (camera == null && super.isInflated()) {
+            if (cameraBackId == -1 && cameraFrontId == -1) {
+                identifyCameras();
+            }
+
+            initCamera(isBackCameraActive ? cameraBackId : cameraFrontId);
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
+
+        Timber.d("StreamFragment onPause!");
+
         releaseCamera();
-        isCameraPreviewVisible = false;
+
+        if (!isStreamActive) {
+            streamPresenter.closeSockets();
+            ((ConnectionTypeFragment) ((StreamContainerFragment) getParentFragment()).getNthFragment(0)).disconnect();
+        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         releaseCamera();
-        isCameraPreviewVisible = false;
     }
 
     @Override
@@ -104,7 +112,6 @@ public class StreamFragment extends BaseFragment implements StreamView {
         Camera.Parameters params = camera.getParameters();
 
         // camParams.setPreviewSize(streamConfig.getResolution().getWidth(), streamConfig.getResolution().getHeight());
-        //camParams.setPreviewSize(640, 480);
         params.setPreviewSize(1280, 720);
 
         camera.setParameters(params);
@@ -119,6 +126,8 @@ public class StreamFragment extends BaseFragment implements StreamView {
 
                 cameraPreview.setVisibility(View.VISIBLE);
                 toolbarLayout.setVisibility(View.VISIBLE);
+
+                isStreamActive = true;
             }
         });
     }
@@ -198,12 +207,16 @@ public class StreamFragment extends BaseFragment implements StreamView {
     }
 
     private void initSurfaceView() {
+        Timber.d("Init SurfaceView...");
+
         surfaceView = new CameraPreviewSurfaceView(getBaseActivity().getApplicationContext(), camera, view);
         cameraPreview.addView(surfaceView);
         isCameraPreviewVisible = true;
     }
 
     private boolean initCamera(int cameraId) {
+        Timber.d("Init camera...");
+
         try {
             camera = Camera.open(cameraId);
             camera.setDisplayOrientation(90);
@@ -352,6 +365,7 @@ public class StreamFragment extends BaseFragment implements StreamView {
         ivStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                isStreamActive = false;
                 streamPresenter.closeStream();
             }
         });
