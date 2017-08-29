@@ -124,7 +124,9 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
         ((ConnectionTypePresenterImpl) connectionTypePresenter).setAccessPointCreated(false);
     }
 
-    private void disconnect() {
+    public void disconnect() {
+        Timber.d("Wi-Fi P2P disconnect() called!");
+
         if (wifiManager != null && wifiChannel != null) {
             wifiManager.requestGroupInfo(wifiChannel, new WifiP2pManager.GroupInfoListener() {
                 @Override

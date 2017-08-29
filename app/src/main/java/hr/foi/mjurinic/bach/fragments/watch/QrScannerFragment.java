@@ -80,12 +80,14 @@ public class QrScannerFragment extends BaseFragment implements QrScannerView {
     @Override
     public void onPause() {
         super.onPause();
+        disconnect();
+        releaseCamera();
+    }
 
+    public void disconnect() {
         if (wifiManager != null) {
             wifiManager.disconnect();
         }
-
-        releaseCamera();
     }
 
     private void showProgressLayout() {

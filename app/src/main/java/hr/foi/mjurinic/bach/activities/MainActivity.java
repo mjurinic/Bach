@@ -92,6 +92,15 @@ public class MainActivity extends BaseActivity implements TabLayout.OnTabSelecte
         }
     }
 
+    public void jumpToHomeFragment() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mainViewPager.setCurrentItem(1);
+            }
+        });
+    }
+
     public boolean hasPermissions() {
         hasCameraPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
 

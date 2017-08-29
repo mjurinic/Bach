@@ -5,4 +5,8 @@ import hr.foi.mjurinic.bach.network.protocol.ProtoMultimedia;
 public interface WatchView {
 
     void updateFrame(ProtoMultimedia multimedia);
+
+    void displayEndOfStreamView();
+
+    void clearComponents();
 }

@@ -63,4 +63,8 @@ public class WatchContainerFragment extends BaseFragment {
     public SocketInteractor getSocketInteractor() {
         return socketInteractor;
     }
+
+    public BaseFragment getNthFragment(int position) {
+        return (BaseFragment) fragments.get(position);
+    }
 }

@@ -46,4 +46,9 @@ public class ProtoMessageType {
      * Stream chunk data.
      */
     public static final int MULTIMEDIA = 301;
+
+    /**
+     * Notify others the stream is closing.
+     */
+    public static final int STREAM_CLOSE = 400;
 }

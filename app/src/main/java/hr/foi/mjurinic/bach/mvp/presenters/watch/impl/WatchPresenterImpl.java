@@ -38,6 +38,11 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
                     }
                     break;
 
+                case ProtoMessageType.STREAM_CLOSE:
+                    if (currState.equals(State.STREAMING_STATE)) {
+                        handleStreamCloseRequest();
+                    }
+
                 default:
                     break;
             }
@@ -68,6 +73,30 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
     @Override
     public void updateFrame(ProtoMultimedia multimedia) {
         view.updateFrame(multimedia);
+    }
+
+    @Override
+    public void closeStream() {
+        sendMessage(new ProtoMessage(ProtoMessageType.STREAM_CLOSE), new DatagramSentListener(this) {
+            @Override
+            public void onSuccess() {
+                Timber.d("StreamClose message sent.");
+
+                view.clearComponents();
+
+                socketInteractor.stopSender();
+                socketInteractor.stopReceiver();
+            }
+        });
+    }
+
+    private void handleStreamCloseRequest() {
+        Timber.d("[STREAMING_STATE] StreamClose received!");
+
+        socketInteractor.stopReceiver();
+        socketInteractor.stopSender();
+
+        view.displayEndOfStreamView();
     }
 
     private void updateSocketCallback() {

@@ -40,8 +40,4 @@ public abstract class DatagramSentListener {
             e.printStackTrace();
         }
     }
-
-    public void disableRetries() {
-        retryCnt = 5;
-    }
 }

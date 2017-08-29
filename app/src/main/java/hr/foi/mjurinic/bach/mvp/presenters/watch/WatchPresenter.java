@@ -8,4 +8,6 @@ public interface WatchPresenter extends BasePresenter {
     void sendClientReady();
 
     void updateFrame(ProtoMultimedia multimedia);
+
+    void closeStream();
 }

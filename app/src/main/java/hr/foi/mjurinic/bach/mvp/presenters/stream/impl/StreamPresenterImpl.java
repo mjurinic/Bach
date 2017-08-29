@@ -32,6 +32,21 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
     }
 
     @Override
+    public void closeStream() {
+        sendMessage(new ProtoMessage(ProtoMessageType.STREAM_CLOSE), new DatagramSentListener(this) {
+            @Override
+            public void onSuccess() {
+                Timber.d("StreamClose message sent.");
+
+                view.clearComponents();
+
+                socketInteractor.stopSender();
+                socketInteractor.stopReceiver();
+            }
+        });
+    }
+
+    @Override
     public void handleDatagram(ReceivedPacket data) {
         if (data.getPayload() instanceof ProtoMessage) {
             ProtoMessage message = (ProtoMessage) data.getPayload();
@@ -55,7 +70,16 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
 
                 case ProtoMessageType.CLIENT_READY:
                     if (currState.equals(State.STREAMING_STATE)) {
+                        Timber.d("Received ClientReady!");
                         view.showCameraPreview(streamConfig);
+                    }
+
+                    break;
+
+                case ProtoMessageType.STREAM_CLOSE:
+                    if (currState.equals(State.STREAMING_STATE)) {
+                        Timber.d("Received StreamCloseRequest!");
+                        handleStreamCloseRequest();
                     }
 
                     break;
@@ -131,6 +155,15 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
                 }
             }
         });
+    }
+
+    private void handleStreamCloseRequest() {
+        Timber.d("[STREAMING_STATE] StreamClose received!");
+
+        socketInteractor.stopReceiver();
+        socketInteractor.stopSender();
+
+        view.displayEndOfStreamView();
     }
 
     private void updateSocketCallback() {

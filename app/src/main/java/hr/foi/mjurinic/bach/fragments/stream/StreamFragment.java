@@ -4,9 +4,9 @@ import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import hr.foi.mjurinic.bach.R;
+import hr.foi.mjurinic.bach.activities.MainActivity;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
 import hr.foi.mjurinic.bach.listeners.DatagramSentListener;
 import hr.foi.mjurinic.bach.models.CameraSize;
@@ -32,10 +33,13 @@ public class StreamFragment extends BaseFragment implements StreamView {
     private Toolbar toolbarPrimaryColor;
     private TextView tvProgress;
     private FrameLayout cameraPreview;
-    private LinearLayout toolbarLayout;
+    private RelativeLayout toolbarLayout;
     private RelativeLayout streamProgressLayout;
+    private RelativeLayout endOfStreamLayout;
     private ImageView ivFlash;
     private ImageView ivCameraSwitch;
+    private ImageView ivStop;
+    private Button btnOk;
 
     // Camera
     private Camera camera;
@@ -72,13 +76,13 @@ public class StreamFragment extends BaseFragment implements StreamView {
     public void onResume() {
         super.onResume();
 
-        if (camera == null) {
-            if (cameraBackId == -1 && cameraFrontId == -1) {
-                identifyCameras();
-            }
-
-            initCamera(isBackCameraActive ? cameraBackId : cameraFrontId);
-        }
+//        if (camera == null) {
+//            if (cameraBackId == -1 && cameraFrontId == -1) {
+//                identifyCameras();
+//            }
+//
+//            initCamera(isBackCameraActive ? cameraBackId : cameraFrontId);
+//        }
     }
 
     @Override
@@ -149,6 +153,33 @@ public class StreamFragment extends BaseFragment implements StreamView {
         }
 
         return new ProtoStreamInfo(frontCameraInfo, backCameraInfo);
+    }
+
+    @Override
+    public void clearComponents() {
+        releaseCamera();
+
+        ((ConnectionTypeFragment) ((StreamContainerFragment) getParentFragment()).getNthFragment(0)).disconnect();
+
+        ((StreamContainerFragment) getParentFragment()).changeActiveFragment(0);
+        ((MainActivity) getBaseActivity()).jumpToHomeFragment();
+    }
+
+    @Override
+    public void displayEndOfStreamView() {
+        releaseCamera();
+        ((ConnectionTypeFragment) ((StreamContainerFragment) getParentFragment()).getNthFragment(0)).disconnect();
+
+        getBaseActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                toolbarPrimaryColor.setTitle("Stream Ended");
+                toolbarLayout.setVisibility(View.GONE);
+                cameraPreview.setVisibility(View.GONE);
+                toolbarPrimaryColor.setVisibility(View.VISIBLE);
+                endOfStreamLayout.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     @Override
@@ -295,10 +326,11 @@ public class StreamFragment extends BaseFragment implements StreamView {
         toolbarPrimaryColor = (Toolbar) view.findViewById(R.id.toolbar_primary_color);
         toolbarPrimaryColor.setTitle("Waiting for Client Connection...");
 
-        toolbarLayout = (LinearLayout) view.findViewById(R.id.toolbar_layout);
+        toolbarLayout = (RelativeLayout) view.findViewById(R.id.toolbar_layout);
         tvProgress = (TextView) view.findViewById(R.id.tv_progress);
         cameraPreview = (FrameLayout) view.findViewById(R.id.stream_camera_preview);
         streamProgressLayout = (RelativeLayout) view.findViewById(R.id.stream_progress_layout);
+        endOfStreamLayout = (RelativeLayout) view.findViewById(R.id.end_stream_layout);
 
         ivFlash = (ImageView) view.findViewById(R.id.iv_flash);
         ivFlash.setOnClickListener(new View.OnClickListener() {
@@ -313,6 +345,23 @@ public class StreamFragment extends BaseFragment implements StreamView {
             @Override
             public void onClick(View v) {
                 onSwitchCamerasClick();
+            }
+        });
+
+        ivStop = (ImageView) view.findViewById(R.id.iv_stop);
+        ivStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                streamPresenter.closeStream();
+            }
+        });
+
+        btnOk = (Button) view.findViewById(R.id.btn_ok);
+        btnOk.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((StreamContainerFragment) getParentFragment()).changeActiveFragment(0);
+                ((MainActivity) getBaseActivity()).jumpToHomeFragment();
             }
         });
     }
