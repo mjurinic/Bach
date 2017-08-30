@@ -39,7 +39,7 @@ public class CameraPreviewSurfaceView extends SurfaceView implements SurfaceHold
                     YuvImage yuvImage = new YuvImage(bytes, ImageFormat.NV21, previewSize.width, previewSize.height, null);
 
                     ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    yuvImage.compressToJpeg(new Rect(0, 0, previewSize.width, previewSize.height), 50, out);
+                    yuvImage.compressToJpeg(new Rect(0, 0, previewSize.width, previewSize.height), 30, out);
 
                     streamView.handleFrame(out.toByteArray());
                 }

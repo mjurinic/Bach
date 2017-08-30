@@ -9,6 +9,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
+import android.view.View;
 import android.widget.LinearLayout;
 
 import java.util.ArrayList;
@@ -19,8 +20,10 @@ import butterknife.ButterKnife;
 import hr.foi.mjurinic.bach.R;
 import hr.foi.mjurinic.bach.fragments.HomeFragment;
 import hr.foi.mjurinic.bach.fragments.stream.StreamContainerFragment;
+import hr.foi.mjurinic.bach.fragments.watch.QrScannerFragment;
 import hr.foi.mjurinic.bach.fragments.watch.WatchContainerFragment;
 import hr.foi.mjurinic.bach.utils.adapters.ViewPagerAdapter;
+import timber.log.Timber;
 
 public class MainActivity extends BaseActivity implements TabLayout.OnTabSelectedListener {
 
@@ -64,6 +67,31 @@ public class MainActivity extends BaseActivity implements TabLayout.OnTabSelecte
         mainViewPager.setOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(mainTabLayout));
         mainTabLayout.setOnTabSelectedListener(this);
         mainViewPager.setCurrentItem(1);
+
+        mainViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (position == 0) {
+                    Timber.d("TU SEM LOL");
+                    QrScannerFragment qrScannerFragment =
+                            ((QrScannerFragment) ((WatchContainerFragment) fragments.get(0)).getNthFragment(0));
+
+                    if (qrScannerFragment != null) {
+                        qrScannerFragment.init();
+                    }
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
     }
 
     @Override
@@ -109,5 +137,22 @@ public class MainActivity extends BaseActivity implements TabLayout.OnTabSelecte
         }
 
         return hasCameraPermission;
+    }
+
+    public void hideTabLayout() {
+        mainTabLayout.setVisibility(View.GONE);
+    }
+
+    public void showTabLayout() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mainTabLayout.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    public void changeActiveFragment(int position) {
+        mainViewPager.setCurrentItem(position);
     }
 }

@@ -63,6 +63,7 @@ public class WatchFragment extends BaseFragment implements WatchView {
             @Override
             public void run() {
                 toolbar.setTitle("Stream Ended");
+                ((MainActivity) getBaseActivity()).showTabLayout();
                 watchStreamLayout.setVisibility(View.GONE);
                 endOfStreamLayout.setVisibility(View.VISIBLE);
             }
@@ -72,8 +73,9 @@ public class WatchFragment extends BaseFragment implements WatchView {
     @Override
     public void clearComponents() {
         ((QrScannerFragment) ((WatchContainerFragment) getParentFragment()).getNthFragment(0)).disconnect();
-
+        ((QrScannerFragment) ((WatchContainerFragment) getParentFragment()).getNthFragment(0)).resetFragment();
         ((WatchContainerFragment) getParentFragment()).changeActiveFragment(0);
+        ((MainActivity) getBaseActivity()).showTabLayout();
         ((MainActivity) getBaseActivity()).jumpToHomeFragment();
     }
 
@@ -95,6 +97,7 @@ public class WatchFragment extends BaseFragment implements WatchView {
         btnOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                ((QrScannerFragment) ((WatchContainerFragment) getParentFragment()).getNthFragment(0)).resetFragment();
                 ((WatchContainerFragment) getParentFragment()).changeActiveFragment(0);
                 ((MainActivity) getBaseActivity()).jumpToHomeFragment();
             }

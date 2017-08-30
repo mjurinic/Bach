@@ -11,4 +11,6 @@ public interface ConnectionTypeView extends BaseView {
     void showQrCode(Bitmap qrCode);
 
     void nextFragment();
+
+    void resetFragment();
 }

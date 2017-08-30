@@ -115,12 +115,23 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
+    public void resetFragment() {
+        // Show progress (part of step-2)
+        progressBar.setVisibility(View.VISIBLE);
+        tvProgress.setVisibility(View.VISIBLE);
 
-        // Timber.d("Closing Wi-Fi P2P access point...");
-        // disconnect();
-        // ((ConnectionTypePresenterImpl) connectionTypePresenter).setAccessPointCreated(false);
+        // Hide QR code (part of step-2)
+        ivQrCode.setVisibility(View.GONE);
+        ivQrCode.setImageBitmap(null);
+
+        // Show step-1 view
+        radioGroup.setVisibility(View.VISIBLE);
+        btnNext.setVisibility(View.VISIBLE);
+
+        // Hide step-2 view
+        qrLayout.setVisibility(View.GONE);
+
+        ((ConnectionTypePresenterImpl) connectionTypePresenter).setAccessPointCreated(false);
     }
 
     public void disconnect() {

@@ -41,6 +41,7 @@ public class QrScannerFragment extends BaseFragment implements QrScannerView {
     private SurfaceView surfaceView;
     private WifiManager wifiManager;
     private int netId;
+    private boolean isInflated;
 
     @Override
     protected int getViewStubLayoutResource() {
@@ -51,6 +52,7 @@ public class QrScannerFragment extends BaseFragment implements QrScannerView {
     protected void onCreateViewAfterViewStubInflated(View inflatedView, Bundle savedInstanceState) {
         bindViews(inflatedView);
 
+        isInflated = true;
         qrScannerPresenter = new QrScannerPresenterImpl(((WatchContainerFragment) getParentFragment()).getSocketInteractor(), this);
 
         initQrScanner();
@@ -78,10 +80,43 @@ public class QrScannerFragment extends BaseFragment implements QrScannerView {
     }
 
     @Override
+    public void resetFragment() {
+        getBaseActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressLayout.setVisibility(View.GONE);
+                cameraPreview.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (cameraSource == null) {
+            initQrScanner();
+            initCameraPreview();
+        }
+    }
+
+    @Override
     public void onPause() {
         super.onPause();
-        disconnect();
         releaseCamera();
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        isInflated = false;
+    }
+
+    public void init() {
+        if (isInflated && cameraSource == null) {
+            initQrScanner();
+            initCameraPreview();
+        }
     }
 
     public void disconnect() {
@@ -210,8 +245,7 @@ public class QrScannerFragment extends BaseFragment implements QrScannerView {
         if (cameraSource != null) {
             cameraPreview.removeAllViews();
             cameraSource.stop();
-
-            Timber.d("Camera preview stopped.");
+            cameraSource = null;
         }
     }
 

@@ -62,13 +62,7 @@ public class StreamFragment extends BaseFragment implements StreamView {
     @Override
     protected void onCreateViewAfterViewStubInflated(View inflatedView, Bundle savedInstanceState) {
         Timber.d("StreamFragment inflated!");
-
-        streamPresenter = new StreamPresenterImpl(this, ((StreamContainerFragment) getParentFragment()).getSocketInteractor());
-        view = this;
-
-        setHasOptionsMenu(true);
         bindViews(inflatedView);
-
         identifyCameras();
     }
 
@@ -76,9 +70,7 @@ public class StreamFragment extends BaseFragment implements StreamView {
     public void onResume() {
         super.onResume();
 
-        Timber.d("onResume: isInflated? " + super.isInflated());
-
-        if (camera == null && super.isInflated()) {
+        if (camera == null && super.hasInflated) {
             if (cameraBackId == -1 && cameraFrontId == -1) {
                 identifyCameras();
             }
@@ -95,16 +87,10 @@ public class StreamFragment extends BaseFragment implements StreamView {
 
         releaseCamera();
 
-        if (!isStreamActive) {
+        if (!isStreamActive && streamPresenter != null) {
             streamPresenter.closeSockets();
             ((ConnectionTypeFragment) ((StreamContainerFragment) getParentFragment()).getNthFragment(0)).disconnect();
         }
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        releaseCamera();
     }
 
     @Override
@@ -128,6 +114,7 @@ public class StreamFragment extends BaseFragment implements StreamView {
                 toolbarLayout.setVisibility(View.VISIBLE);
 
                 isStreamActive = true;
+                ((MainActivity) getBaseActivity()).hideTabLayout();
             }
         });
     }
@@ -166,12 +153,22 @@ public class StreamFragment extends BaseFragment implements StreamView {
 
     @Override
     public void clearComponents() {
-        releaseCamera();
-
         ((ConnectionTypeFragment) ((StreamContainerFragment) getParentFragment()).getNthFragment(0)).disconnect();
+
+        releaseCamera();
 
         ((StreamContainerFragment) getParentFragment()).changeActiveFragment(0);
         ((MainActivity) getBaseActivity()).jumpToHomeFragment();
+
+        // Resetting views from main thread.
+        getBaseActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((ConnectionTypeFragment) ((StreamContainerFragment) getParentFragment()).getNthFragment(0)).resetFragment();
+                ((MainActivity) getBaseActivity()).showTabLayout();
+                resetFragment();
+            }
+        });
     }
 
     @Override
@@ -194,6 +191,29 @@ public class StreamFragment extends BaseFragment implements StreamView {
     @Override
     public void updateProgressText(String progress) {
         tvProgress.setText(progress);
+    }
+
+    public void init() {
+        view = this;
+        streamPresenter = new StreamPresenterImpl(this, ((StreamContainerFragment) getParentFragment()).getSocketInteractor());
+    }
+
+    private void resetFragment() {
+        Timber.d("Resetting StreamFragment...");
+
+        isStreamActive = false;
+        toolbarPrimaryColor.setTitle("Waiting for Client Connection...");
+
+        // Show 1. step
+        toolbarPrimaryColor.setVisibility(View.VISIBLE);
+        streamProgressLayout.setVisibility(View.VISIBLE);
+
+        // Hide 2. step
+        cameraPreview.setVisibility(View.GONE);
+        toolbarLayout.setVisibility(View.GONE);
+
+        // Hide 3. step
+        endOfStreamLayout.setVisibility(View.GONE);
     }
 
     private ProtoStreamInfo.CameraInfo gatherCameraInfo(Camera camera) {
@@ -374,7 +394,10 @@ public class StreamFragment extends BaseFragment implements StreamView {
         btnOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                resetFragment();
+                ((ConnectionTypeFragment) ((StreamContainerFragment) getParentFragment()).getNthFragment(0)).resetFragment();
                 ((StreamContainerFragment) getParentFragment()).changeActiveFragment(0);
+                ((MainActivity) getBaseActivity()).showTabLayout();
                 ((MainActivity) getBaseActivity()).jumpToHomeFragment();
             }
         });

@@ -51,6 +51,10 @@ public class StreamContainerFragment extends BaseFragment {
             @Override
             public void run() {
                 viewPager.setCurrentItem(position);
+
+                if (position == 1) {
+                    ((StreamFragment) fragments.get(position)).init();
+                }
             }
         });
     }

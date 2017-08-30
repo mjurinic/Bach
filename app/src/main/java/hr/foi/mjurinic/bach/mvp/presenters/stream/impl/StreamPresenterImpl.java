@@ -25,6 +25,8 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
     private String currState = State.STREAM_INFO_STATE;
 
     public StreamPresenterImpl(StreamView view, SocketInteractor socketInteractor) {
+        Timber.d("StreamPresentImpl constructor!");
+
         this.view = view;
         this.socketInteractor = socketInteractor;
 
@@ -37,6 +39,8 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
             @Override
             public void onSuccess() {
                 Timber.d("StreamClose message sent.");
+
+                //currState = State.STREAM_INFO_STATE;
                 view.clearComponents();
                 closeSockets();
             }
