@@ -6,4 +6,6 @@ import hr.foi.mjurinic.bach.mvp.presenters.BasePresenter;
 public interface QrScannerPresenter extends BasePresenter {
 
     void initSocketLayer(WifiHostInformation hostInformation);
+
+    void closeSockets();
 }

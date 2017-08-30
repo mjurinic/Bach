@@ -66,9 +66,19 @@ public class QrScannerPresenterImpl implements QrScannerPresenter, SocketListene
     }
 
     @Override
+    public void closeSockets() {
+        currState = State.HELLO_STATE;
+        socketInteractor.stopSender();
+        socketInteractor.stopReceiver();
+    }
+
+    @Override
     public void handleDatagram(ReceivedPacket data) {
         if (data.getPayload() instanceof ProtoMessage) {
             ProtoMessage message = (ProtoMessage) data.getPayload();
+
+            Timber.d("Current state: " + currState);
+            Timber.d("Received message id: " + message.getId());
 
             switch (message.getId()) {
                 case ProtoMessageType.HELLO_RESPONSE:

@@ -64,6 +64,7 @@ public class WatchFragment extends BaseFragment implements WatchView {
             public void run() {
                 toolbar.setTitle("Stream Ended");
                 ((MainActivity) getBaseActivity()).showTabLayout();
+                streamPreview.setImageBitmap(null);
                 watchStreamLayout.setVisibility(View.GONE);
                 endOfStreamLayout.setVisibility(View.VISIBLE);
             }
@@ -72,11 +73,30 @@ public class WatchFragment extends BaseFragment implements WatchView {
 
     @Override
     public void clearComponents() {
+        streamPreview.setImageBitmap(null);
         ((QrScannerFragment) ((WatchContainerFragment) getParentFragment()).getNthFragment(0)).disconnect();
         ((QrScannerFragment) ((WatchContainerFragment) getParentFragment()).getNthFragment(0)).resetFragment();
         ((WatchContainerFragment) getParentFragment()).changeActiveFragment(0);
         ((MainActivity) getBaseActivity()).showTabLayout();
         ((MainActivity) getBaseActivity()).jumpToHomeFragment();
+    }
+
+    /**
+     * Method used for sending "ClientReady" message after
+     * the fragment is revisited. Since ViewStub is used
+     * the fragment wont be re-inflated and the "onCreateView"
+     * wont be called so we have to manually call this.
+     */
+    public void sendClientReady() {
+        if (watchPresenter != null) {
+            watchPresenter.updateSocketCallback();
+            watchPresenter.sendClientReady();
+        }
+    }
+
+    public void resetFragment() {
+        endOfStreamLayout.setVisibility(View.GONE);
+        watchStreamLayout.setVisibility(View.VISIBLE);
     }
 
     private void bindViews(View view) {
@@ -97,6 +117,8 @@ public class WatchFragment extends BaseFragment implements WatchView {
         btnOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                resetFragment();
+                clearComponents();
                 ((QrScannerFragment) ((WatchContainerFragment) getParentFragment()).getNthFragment(0)).resetFragment();
                 ((WatchContainerFragment) getParentFragment()).changeActiveFragment(0);
                 ((MainActivity) getBaseActivity()).jumpToHomeFragment();

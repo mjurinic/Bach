@@ -49,6 +49,7 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
 
     @Override
     public void closeSockets() {
+        currState = State.STREAM_INFO_STATE;
         socketInteractor.stopSender();
         socketInteractor.stopReceiver();
     }
@@ -76,8 +77,9 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
                     break;
 
                 case ProtoMessageType.CLIENT_READY:
-                    if (currState.equals(State.STREAMING_STATE)) {
+                    if (currState.equals(State.STREAM_CONFIG_STATE)) {
                         Timber.d("Received ClientReady!");
+                        currState = State.STREAMING_STATE;
                         view.showCameraPreview(streamConfig);
                     }
 
@@ -158,7 +160,7 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
                     Timber.d("Next state: STREAMING_STATE.");
 
                     streamConfig = payload;
-                    currState = State.STREAMING_STATE;
+                    // currState = State.STREAMING_STATE;
                 }
             }
         });

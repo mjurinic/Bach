@@ -39,6 +39,7 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
 
     // Views
     private Button btnNext;
+    private Button btnCancel;
     private RadioButton radioWifiP2P;
     private RadioButton radioInternet;
     private RadioGroup radioGroup;
@@ -121,10 +122,12 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
         tvProgress.setVisibility(View.VISIBLE);
 
         // Hide QR code (part of step-2)
+        btnCancel.setVisibility(View.GONE);
         ivQrCode.setVisibility(View.GONE);
         ivQrCode.setImageBitmap(null);
 
         // Show step-1 view
+        radioGroup.clearCheck();
         radioGroup.setVisibility(View.VISIBLE);
         btnNext.setVisibility(View.VISIBLE);
 
@@ -132,6 +135,7 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
         qrLayout.setVisibility(View.GONE);
 
         ((ConnectionTypePresenterImpl) connectionTypePresenter).setAccessPointCreated(false);
+        connectionTypePresenter.closeSockets();
     }
 
     public void disconnect() {
@@ -211,6 +215,7 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
         btnNext.setVisibility(View.GONE);
 
         // Show step-2 view
+        btnCancel.setVisibility(View.VISIBLE);
         qrLayout.setVisibility(View.VISIBLE);
     }
 
@@ -248,6 +253,15 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
                         createWifiP2PGroup();
                     }
                 }
+            }
+        });
+
+        btnCancel = (Button) inflatedView.findViewById(R.id.btn_cancel);
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                disconnect();
+                resetFragment();
             }
         });
     }

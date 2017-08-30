@@ -11,6 +11,7 @@ import android.util.SparseArray;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -24,6 +25,7 @@ import com.google.gson.Gson;
 import java.io.IOException;
 
 import hr.foi.mjurinic.bach.R;
+import hr.foi.mjurinic.bach.activities.MainActivity;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
 import hr.foi.mjurinic.bach.models.WifiHostInformation;
 import hr.foi.mjurinic.bach.mvp.presenters.watch.QrScannerPresenter;
@@ -33,10 +35,13 @@ import timber.log.Timber;
 
 public class QrScannerFragment extends BaseFragment implements QrScannerView {
 
+    // Views
     private QrScannerPresenter qrScannerPresenter;
     private FrameLayout cameraPreview;
     private RelativeLayout progressLayout;
     private TextView tvProgress;
+    private Button btnCancel;
+
     private CameraSource cameraSource;
     private SurfaceView surfaceView;
     private WifiManager wifiManager;
@@ -84,10 +89,13 @@ public class QrScannerFragment extends BaseFragment implements QrScannerView {
         getBaseActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                btnCancel.setVisibility(View.GONE);
                 progressLayout.setVisibility(View.GONE);
                 cameraPreview.setVisibility(View.VISIBLE);
             }
         });
+
+        qrScannerPresenter.closeSockets();
     }
 
     @Override
@@ -126,6 +134,7 @@ public class QrScannerFragment extends BaseFragment implements QrScannerView {
     }
 
     private void showProgressLayout() {
+        btnCancel.setVisibility(View.VISIBLE);
         progressLayout.setVisibility(View.VISIBLE);
         cameraPreview.setVisibility(View.GONE);
 
@@ -256,5 +265,15 @@ public class QrScannerFragment extends BaseFragment implements QrScannerView {
         cameraPreview = (FrameLayout) view.findViewById(R.id.camera_preview);
         progressLayout = (RelativeLayout) view.findViewById(R.id.progress_layout);
         tvProgress = (TextView) view.findViewById(R.id.tv_progress);
+
+        btnCancel = (Button) view.findViewById(R.id.btn_cancel);
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                disconnect();
+                resetFragment();
+                ((MainActivity) getBaseActivity()).jumpToHomeFragment();
+            }
+        });
     }
 }

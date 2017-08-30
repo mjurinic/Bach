@@ -60,6 +60,12 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
     }
 
     @Override
+    public void updateSocketCallback() {
+        Timber.d("Updating socket callback...");
+        socketInteractor.updateReceiverCallback(this);
+    }
+
+    @Override
     public void sendClientReady() {
         sendMessage(new ProtoMessage(ProtoMessageType.CLIENT_READY), new DatagramSentListener(this) {
             @Override
@@ -77,6 +83,8 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
 
     @Override
     public void closeStream() {
+        currState = State.STREAM_CONFIG_STATE;
+
         sendMessage(new ProtoMessage(ProtoMessageType.STREAM_CLOSE), new DatagramSentListener(this) {
             @Override
             public void onSuccess() {
@@ -97,10 +105,5 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
         socketInteractor.stopSender();
 
         view.displayEndOfStreamView();
-    }
-
-    private void updateSocketCallback() {
-        Timber.d("Updating socket callback...");
-        socketInteractor.updateReceiverCallback(this);
     }
 }

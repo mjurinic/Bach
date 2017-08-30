@@ -12,4 +12,5 @@
     <string name="stream_ended_message">Looks like the host has ended the stream.\n\nPress the \"OK\" button to return to the main screen.
         From there you can start another stream.</string>
     <string name="initializing_components">Initializing components...</string>
+    <string name="cancel">cancel</string>
 </resources>

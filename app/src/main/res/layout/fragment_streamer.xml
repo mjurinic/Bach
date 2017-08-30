@@ -77,6 +77,17 @@
             android:indeterminate="true"
             android:visibility="visible"/>
 
+        <Button
+            android:id="@+id/btn_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="@dimen/default_spacing"
+            android:background="@color/colorPrimary"
+            android:text="@string/cancel"
+            android:textColor="@android:color/white"/>
+
     </RelativeLayout>
 
     <RelativeLayout

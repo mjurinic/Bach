@@ -40,6 +40,7 @@ public class StreamFragment extends BaseFragment implements StreamView {
     private ImageView ivCameraSwitch;
     private ImageView ivStop;
     private Button btnOk;
+    private Button btnCancel;
 
     // Camera
     private Camera camera;
@@ -99,7 +100,6 @@ public class StreamFragment extends BaseFragment implements StreamView {
 
         // camParams.setPreviewSize(streamConfig.getResolution().getWidth(), streamConfig.getResolution().getHeight());
         params.setPreviewSize(1280, 720);
-
         camera.setParameters(params);
 
         getBaseActivity().runOnUiThread(new Runnable() {
@@ -107,6 +107,7 @@ public class StreamFragment extends BaseFragment implements StreamView {
             public void run() {
                 initSurfaceView();
 
+                btnCancel.setVisibility(View.GONE);
                 toolbarPrimaryColor.setVisibility(View.GONE);
                 streamProgressLayout.setVisibility(View.GONE);
 
@@ -205,6 +206,7 @@ public class StreamFragment extends BaseFragment implements StreamView {
         toolbarPrimaryColor.setTitle("Waiting for Client Connection...");
 
         // Show 1. step
+        btnCancel.setVisibility(View.VISIBLE);
         toolbarPrimaryColor.setVisibility(View.VISIBLE);
         streamProgressLayout.setVisibility(View.VISIBLE);
 
@@ -398,6 +400,18 @@ public class StreamFragment extends BaseFragment implements StreamView {
                 ((ConnectionTypeFragment) ((StreamContainerFragment) getParentFragment()).getNthFragment(0)).resetFragment();
                 ((StreamContainerFragment) getParentFragment()).changeActiveFragment(0);
                 ((MainActivity) getBaseActivity()).showTabLayout();
+                ((MainActivity) getBaseActivity()).jumpToHomeFragment();
+            }
+        });
+
+        btnCancel = (Button) view.findViewById(R.id.btn_cancel);
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                releaseCamera();
+                ((ConnectionTypeFragment) ((StreamContainerFragment) getParentFragment()).getNthFragment(0)).disconnect();
+                ((ConnectionTypeFragment) ((StreamContainerFragment) getParentFragment()).getNthFragment(0)).resetFragment();
+                ((StreamContainerFragment) getParentFragment()).changeActiveFragment(0);
                 ((MainActivity) getBaseActivity()).jumpToHomeFragment();
             }
         });

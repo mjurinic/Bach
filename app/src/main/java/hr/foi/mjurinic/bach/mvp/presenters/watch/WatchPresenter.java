@@ -5,6 +5,8 @@ import hr.foi.mjurinic.bach.network.protocol.ProtoMultimedia;
 
 public interface WatchPresenter extends BasePresenter {
 
+    void updateSocketCallback();
+
     void sendClientReady();
 
     void updateFrame(ProtoMultimedia multimedia);

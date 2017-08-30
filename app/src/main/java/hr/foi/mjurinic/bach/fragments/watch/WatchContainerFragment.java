@@ -51,6 +51,7 @@ public class WatchContainerFragment extends BaseFragment {
         viewPager.setCurrentItem(position);
 
         if (position == 1) {
+            ((WatchFragment) fragments.get(position)).sendClientReady();
             ((MainActivity) getBaseActivity()).hideTabLayout();
         }
     }
