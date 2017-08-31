@@ -1,7 +1,5 @@
 package hr.foi.mjurinic.bach.mvp.presenters.watch.impl;
 
-import android.graphics.Bitmap;
-
 import hr.foi.mjurinic.bach.listeners.DatagramSentListener;
 import hr.foi.mjurinic.bach.listeners.SocketListener;
 import hr.foi.mjurinic.bach.models.ReceivedPacket;
@@ -36,9 +34,14 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
                 case ProtoMessageType.MULTIMEDIA:
                     if (currState.equals(State.STREAMING_STATE)) {
                         Timber.i("[STREAMING_STATE] Frame received!");
-                        view.updateFrame(((ProtoMultimedia) message).getFrameAsBitmap());
+                        view.updateFrame((ProtoMultimedia) message);
                     }
                     break;
+
+                case ProtoMessageType.STREAM_CLOSE:
+                    if (currState.equals(State.STREAMING_STATE)) {
+                        handleStreamCloseRequest();
+                    }
 
                 default:
                     break;
@@ -57,6 +60,12 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
     }
 
     @Override
+    public void updateSocketCallback() {
+        Timber.d("Updating socket callback...");
+        socketInteractor.updateReceiverCallback(this);
+    }
+
+    @Override
     public void sendClientReady() {
         sendMessage(new ProtoMessage(ProtoMessageType.CLIENT_READY), new DatagramSentListener(this) {
             @Override
@@ -68,12 +77,33 @@ public class WatchPresenterImpl implements WatchPresenter, SocketListener {
     }
 
     @Override
-    public void updateFrame(Bitmap frame) {
-        view.updateFrame(frame);
+    public void updateFrame(ProtoMultimedia multimedia) {
+        view.updateFrame(multimedia);
     }
 
-    private void updateSocketCallback() {
-        Timber.d("Updating socket callback...");
-        socketInteractor.updateReceiverCallback(this);
+    @Override
+    public void closeStream() {
+        currState = State.STREAM_CONFIG_STATE;
+
+        sendMessage(new ProtoMessage(ProtoMessageType.STREAM_CLOSE), new DatagramSentListener(this) {
+            @Override
+            public void onSuccess() {
+                Timber.d("StreamClose message sent.");
+
+                view.clearComponents();
+
+                socketInteractor.stopSender();
+                socketInteractor.stopReceiver();
+            }
+        });
+    }
+
+    private void handleStreamCloseRequest() {
+        Timber.d("[STREAMING_STATE] StreamClose received!");
+
+        socketInteractor.stopReceiver();
+        socketInteractor.stopSender();
+
+        view.displayEndOfStreamView();
     }
 }

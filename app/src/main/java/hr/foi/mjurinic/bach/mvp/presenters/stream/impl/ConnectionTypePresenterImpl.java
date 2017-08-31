@@ -93,6 +93,12 @@ public class ConnectionTypePresenterImpl implements ConnectionTypePresenter, Soc
     }
 
     @Override
+    public void closeSockets() {
+        socketInteractor.stopReceiver();
+        socketInteractor.stopSender();
+    }
+
+    @Override
     public void sendMessage(ProtoMessage message, DatagramSentListener callback) {
         socketInteractor.send(message, callback);
     }

@@ -10,4 +10,8 @@ public interface StreamView extends BaseView {
     void handleFrame(byte[] frame);
 
     ProtoStreamInfo provideCameraInfo();
+
+    void clearComponents();
+
+    void displayEndOfStreamView();
 }

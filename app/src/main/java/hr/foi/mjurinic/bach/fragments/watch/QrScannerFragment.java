@@ -11,6 +11,7 @@ import android.util.SparseArray;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -24,6 +25,7 @@ import com.google.gson.Gson;
 import java.io.IOException;
 
 import hr.foi.mjurinic.bach.R;
+import hr.foi.mjurinic.bach.activities.MainActivity;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
 import hr.foi.mjurinic.bach.models.WifiHostInformation;
 import hr.foi.mjurinic.bach.mvp.presenters.watch.QrScannerPresenter;
@@ -33,14 +35,18 @@ import timber.log.Timber;
 
 public class QrScannerFragment extends BaseFragment implements QrScannerView {
 
+    // Views
     private QrScannerPresenter qrScannerPresenter;
     private FrameLayout cameraPreview;
     private RelativeLayout progressLayout;
     private TextView tvProgress;
+    private Button btnCancel;
+
     private CameraSource cameraSource;
     private SurfaceView surfaceView;
     private WifiManager wifiManager;
     private int netId;
+    private boolean isInflated;
 
     @Override
     protected int getViewStubLayoutResource() {
@@ -51,6 +57,7 @@ public class QrScannerFragment extends BaseFragment implements QrScannerView {
     protected void onCreateViewAfterViewStubInflated(View inflatedView, Bundle savedInstanceState) {
         bindViews(inflatedView);
 
+        isInflated = true;
         qrScannerPresenter = new QrScannerPresenterImpl(((WatchContainerFragment) getParentFragment()).getSocketInteractor(), this);
 
         initQrScanner();
@@ -78,17 +85,56 @@ public class QrScannerFragment extends BaseFragment implements QrScannerView {
     }
 
     @Override
+    public void resetFragment() {
+        getBaseActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                btnCancel.setVisibility(View.GONE);
+                progressLayout.setVisibility(View.GONE);
+                cameraPreview.setVisibility(View.VISIBLE);
+            }
+        });
+
+        qrScannerPresenter.closeSockets();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (cameraSource == null) {
+            initQrScanner();
+            initCameraPreview();
+        }
+    }
+
+    @Override
     public void onPause() {
         super.onPause();
-
-        if (wifiManager != null) {
-            wifiManager.disconnect();
-        }
-
         releaseCamera();
     }
 
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        isInflated = false;
+    }
+
+    public void init() {
+        if (isInflated && cameraSource == null) {
+            initQrScanner();
+            initCameraPreview();
+        }
+    }
+
+    public void disconnect() {
+        if (wifiManager != null) {
+            wifiManager.disconnect();
+        }
+    }
+
     private void showProgressLayout() {
+        btnCancel.setVisibility(View.VISIBLE);
         progressLayout.setVisibility(View.VISIBLE);
         cameraPreview.setVisibility(View.GONE);
 
@@ -208,8 +254,7 @@ public class QrScannerFragment extends BaseFragment implements QrScannerView {
         if (cameraSource != null) {
             cameraPreview.removeAllViews();
             cameraSource.stop();
-
-            Timber.d("Camera preview stopped.");
+            cameraSource = null;
         }
     }
 
@@ -220,5 +265,15 @@ public class QrScannerFragment extends BaseFragment implements QrScannerView {
         cameraPreview = (FrameLayout) view.findViewById(R.id.camera_preview);
         progressLayout = (RelativeLayout) view.findViewById(R.id.progress_layout);
         tvProgress = (TextView) view.findViewById(R.id.tv_progress);
+
+        btnCancel = (Button) view.findViewById(R.id.btn_cancel);
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                disconnect();
+                resetFragment();
+                ((MainActivity) getBaseActivity()).jumpToHomeFragment();
+            }
+        });
     }
 }

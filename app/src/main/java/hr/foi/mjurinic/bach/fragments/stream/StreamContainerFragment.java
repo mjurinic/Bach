@@ -40,16 +40,6 @@ public class StreamContainerFragment extends BaseFragment {
         changeActiveFragment(0);
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        if (socketInteractor != null) {
-            socketInteractor.stopReceiver();
-            socketInteractor.stopSender();
-        }
-    }
-
     private void initFragments() {
         fragments = new ArrayList<>();
         fragments.add(new ConnectionTypeFragment());
@@ -61,11 +51,19 @@ public class StreamContainerFragment extends BaseFragment {
             @Override
             public void run() {
                 viewPager.setCurrentItem(position);
+
+                if (position == 1) {
+                    ((StreamFragment) fragments.get(position)).init();
+                }
             }
         });
     }
 
     public SocketInteractor getSocketInteractor() {
         return socketInteractor;
+    }
+
+    public BaseFragment getNthFragment(int position) {
+        return (BaseFragment) fragments.get(position);
     }
 }

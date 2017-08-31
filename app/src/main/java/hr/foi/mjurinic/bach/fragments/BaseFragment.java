@@ -1,6 +1,7 @@
 package hr.foi.mjurinic.bach.fragments;
 
 import android.os.Bundle;
+import android.support.annotation.CallSuper;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -19,7 +20,7 @@ public abstract class BaseFragment extends Fragment {
     ViewStub viewStub;
 
     private Bundle savedInstanceState;
-    private boolean hasInflated;
+    protected boolean hasInflated;
 
     @Nullable
     @Override
@@ -53,6 +54,7 @@ public abstract class BaseFragment extends Fragment {
         hasInflated = true;
     }
 
+    @CallSuper
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);

@@ -53,6 +53,7 @@ public class MediaSocket {
 
             } catch (IOException e) {
                 e.printStackTrace();
+                Timber.d("[E] Packet size: " + encrypted.length + "B");
             }
 
             return false;
@@ -77,7 +78,9 @@ public class MediaSocket {
             byte[] encrypted = Arrays.copyOfRange(buffer, 0, packet.getLength());
             byte[] decrypted = Crypto.decrypt(encrypted, key);
 
-            return new ReceivedPacket(packet.getAddress(), packet.getPort(), Serializator.deserialize(decrypted));
+            if (decrypted != null) {
+                return new ReceivedPacket(packet.getAddress(), packet.getPort(), Serializator.deserialize(decrypted));
+            }
 
         } catch (IOException e) {
             // e.printStackTrace();

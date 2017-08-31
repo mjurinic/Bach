@@ -1,8 +1,12 @@
 package hr.foi.mjurinic.bach.mvp.views;
 
-import android.graphics.Bitmap;
+import hr.foi.mjurinic.bach.network.protocol.ProtoMultimedia;
 
 public interface WatchView {
 
-    void updateFrame(Bitmap frame);
+    void updateFrame(ProtoMultimedia multimedia);
+
+    void displayEndOfStreamView();
+
+    void clearComponents();
 }

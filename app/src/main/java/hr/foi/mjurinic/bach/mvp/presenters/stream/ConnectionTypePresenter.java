@@ -8,4 +8,6 @@ public interface ConnectionTypePresenter extends BasePresenter {
     void initSocketLayer(WifiHostInformation hostInformation);
 
     void generateQrCode(WifiHostInformation wifiHostInformation);
+
+    void closeSockets();
 }

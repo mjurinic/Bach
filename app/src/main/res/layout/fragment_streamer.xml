@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:background="@android:color/white"
-              android:orientation="vertical">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/black"
+                android:orientation="vertical">
 
     <FrameLayout
         android:id="@+id/stream_camera_preview"
@@ -11,6 +11,41 @@
         android:layout_height="match_parent"
         android:background="@android:color/white"
         android:visibility="gone"/>
+
+    <RelativeLayout
+        android:id="@+id/toolbar_layout"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:layout_marginTop="25dp"
+        android:background="#08000000"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="@dimen/default_spacing"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/iv_camera_switch"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginLeft="@dimen/default_spacing"
+            android:background="@drawable/ic_switch_camera_white_48dp"/>
+
+        <ImageView
+            android:id="@+id/iv_stop"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:background="@drawable/ic_stop_white_24dp"/>
+
+        <ImageView
+            android:id="@+id/iv_flash"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_toLeftOf="@id/iv_camera_switch"
+            android:background="@drawable/ic_flash_off_white_48dp"/>
+
+    </RelativeLayout>
 
     <include
         layout="@layout/layout_toolbar_primary_color"
@@ -21,7 +56,8 @@
         android:id="@+id/stream_progress_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="@dimen/navigation_bar_size"
+        android:layout_below="@id/toolbar_primary_color"
+        android:background="@android:color/white"
         android:paddingEnd="@dimen/default_spacing"
         android:paddingStart="@dimen/default_spacing">
 
@@ -30,7 +66,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@+id/connection_progress"
-            android:text="Initializing components..."/>
+            android:text="@string/initializing_components"/>
 
         <ProgressBar
             android:id="@+id/connection_progress"
@@ -41,6 +77,46 @@
             android:indeterminate="true"
             android:visibility="visible"/>
 
+        <Button
+            android:id="@+id/btn_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="@dimen/default_spacing"
+            android:background="@color/colorPrimary"
+            android:text="@string/cancel"
+            android:textColor="@android:color/white"/>
+
     </RelativeLayout>
 
-</LinearLayout>
+    <RelativeLayout
+        android:id="@+id/end_stream_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar_primary_color"
+        android:background="@android:color/white"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tv_stream_ended"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/toolbar_primary_color"
+            android:padding="@dimen/default_spacing"
+            android:text="@string/stream_ended_message"/>
+
+        <Button
+            android:id="@+id/btn_ok"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="@dimen/default_spacing"
+            android:background="@color/colorPrimary"
+            android:text="@string/ok"
+            android:textColor="@android:color/white"/>
+
+    </RelativeLayout>
+
+</RelativeLayout>

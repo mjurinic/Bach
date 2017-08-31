@@ -25,10 +25,33 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
     private String currState = State.STREAM_INFO_STATE;
 
     public StreamPresenterImpl(StreamView view, SocketInteractor socketInteractor) {
+        Timber.d("StreamPresentImpl constructor!");
+
         this.view = view;
         this.socketInteractor = socketInteractor;
 
         updateSocketCallback();
+    }
+
+    @Override
+    public void closeStream() {
+        sendMessage(new ProtoMessage(ProtoMessageType.STREAM_CLOSE), new DatagramSentListener(this) {
+            @Override
+            public void onSuccess() {
+                Timber.d("StreamClose message sent.");
+
+                //currState = State.STREAM_INFO_STATE;
+                view.clearComponents();
+                closeSockets();
+            }
+        });
+    }
+
+    @Override
+    public void closeSockets() {
+        currState = State.STREAM_INFO_STATE;
+        socketInteractor.stopSender();
+        socketInteractor.stopReceiver();
     }
 
     @Override
@@ -54,8 +77,18 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
                     break;
 
                 case ProtoMessageType.CLIENT_READY:
-                    if (currState.equals(State.STREAMING_STATE)) {
+                    if (currState.equals(State.STREAM_CONFIG_STATE)) {
+                        Timber.d("Received ClientReady!");
+                        currState = State.STREAMING_STATE;
                         view.showCameraPreview(streamConfig);
+                    }
+
+                    break;
+
+                case ProtoMessageType.STREAM_CLOSE:
+                    if (currState.equals(State.STREAMING_STATE)) {
+                        Timber.d("Received StreamCloseRequest!");
+                        handleStreamCloseRequest();
                     }
 
                     break;
@@ -94,11 +127,14 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
         Timber.d("Requested resolution: " + payload.getResolution().getWidth() + "x" + payload.getResolution().getHeight());
         Timber.d("Requested FPS: " + payload.getFpsRange()[0] + " - " + payload.getFpsRange()[1]);
 
+        ProtoStreamInfo.CameraInfo cameraInfo =
+                streamInfo.getFrontCameraInfo() != null ? streamInfo.getFrontCameraInfo() : streamInfo.getBackCameraInfo();
+
         boolean checkConfig = false;
 
-        for (CameraSize resolution : streamInfo.getResolutions()) {
+        for (CameraSize resolution : cameraInfo.getResolutions()) {
             if (resolution.equals(payload.getResolution())) {
-                for (int[] fpsRange : streamInfo.getSupportedFpsRange()) {
+                for (int[] fpsRange : cameraInfo.getSupportedFpsRange()) {
                     Timber.d(fpsRange.toString() + " ][ " + payload.getFpsRange().toString());
 
                     if (Arrays.equals(fpsRange, payload.getFpsRange())) {
@@ -124,10 +160,19 @@ public class StreamPresenterImpl implements StreamPresenter, SocketListener {
                     Timber.d("Next state: STREAMING_STATE.");
 
                     streamConfig = payload;
-                    currState = State.STREAMING_STATE;
+                    // currState = State.STREAMING_STATE;
                 }
             }
         });
+    }
+
+    private void handleStreamCloseRequest() {
+        Timber.d("[STREAMING_STATE] StreamClose received!");
+
+        socketInteractor.stopReceiver();
+        socketInteractor.stopSender();
+
+        view.displayEndOfStreamView();
     }
 
     private void updateSocketCallback() {

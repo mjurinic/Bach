@@ -39,6 +39,7 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
 
     // Views
     private Button btnNext;
+    private Button btnCancel;
     private RadioButton radioWifiP2P;
     private RadioButton radioInternet;
     private RadioGroup radioGroup;
@@ -115,16 +116,31 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
+    public void resetFragment() {
+        // Show progress (part of step-2)
+        progressBar.setVisibility(View.VISIBLE);
+        tvProgress.setVisibility(View.VISIBLE);
 
-        Timber.d("Closing Wi-Fi P2P access point...");
-        disconnect();
+        // Hide QR code (part of step-2)
+        btnCancel.setVisibility(View.GONE);
+        ivQrCode.setVisibility(View.GONE);
+        ivQrCode.setImageBitmap(null);
+
+        // Show step-1 view
+        radioGroup.clearCheck();
+        radioGroup.setVisibility(View.VISIBLE);
+        btnNext.setVisibility(View.VISIBLE);
+
+        // Hide step-2 view
+        qrLayout.setVisibility(View.GONE);
 
         ((ConnectionTypePresenterImpl) connectionTypePresenter).setAccessPointCreated(false);
+        connectionTypePresenter.closeSockets();
     }
 
-    private void disconnect() {
+    public void disconnect() {
+        Timber.d("Wi-Fi P2P disconnect() called!");
+
         if (wifiManager != null && wifiChannel != null) {
             wifiManager.requestGroupInfo(wifiChannel, new WifiP2pManager.GroupInfoListener() {
                 @Override
@@ -199,6 +215,7 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
         btnNext.setVisibility(View.GONE);
 
         // Show step-2 view
+        btnCancel.setVisibility(View.VISIBLE);
         qrLayout.setVisibility(View.VISIBLE);
     }
 
@@ -236,6 +253,15 @@ public class ConnectionTypeFragment extends BaseFragment implements ConnectionTy
                         createWifiP2PGroup();
                     }
                 }
+            }
+        });
+
+        btnCancel = (Button) inflatedView.findViewById(R.id.btn_cancel);
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                disconnect();
+                resetFragment();
             }
         });
     }

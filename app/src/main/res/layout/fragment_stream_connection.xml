@@ -45,6 +45,18 @@
         android:text="@string/next"
         android:textColor="@android:color/white"/>
 
+    <Button
+        android:id="@+id/btn_cancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="@dimen/default_spacing"
+        android:background="@color/colorPrimary"
+        android:text="@string/cancel"
+        android:textColor="@android:color/white"
+        android:visibility="gone"/>
+
     <RelativeLayout
         android:id="@+id/qr_layout"
         android:layout_width="match_parent"

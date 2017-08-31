@@ -15,7 +15,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/toolbar_primary_color"
-        android:background="@android:color/black"/>
+        android:background="@android:color/white"/>
+
+    <Button
+        android:id="@+id/btn_cancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="@dimen/default_spacing"
+        android:background="@color/colorPrimary"
+        android:text="@string/cancel"
+        android:textColor="@android:color/white"
+        android:visibility="gone"/>
 
     <RelativeLayout
         android:id="@+id/progress_layout"

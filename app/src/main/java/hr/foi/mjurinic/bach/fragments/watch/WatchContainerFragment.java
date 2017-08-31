@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import hr.foi.mjurinic.bach.R;
+import hr.foi.mjurinic.bach.activities.MainActivity;
 import hr.foi.mjurinic.bach.fragments.BaseFragment;
 import hr.foi.mjurinic.bach.mvp.interactors.SocketInteractor;
 import hr.foi.mjurinic.bach.mvp.interactors.impl.SocketInteractorImpl;
@@ -40,16 +41,6 @@ public class WatchContainerFragment extends BaseFragment {
         changeActiveFragment(0);
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        if (socketInteractor != null) {
-            socketInteractor.stopReceiver();
-            socketInteractor.stopSender();
-        }
-    }
-
     private void initFragments() {
         fragments = new ArrayList<>();
         fragments.add(new QrScannerFragment());
@@ -58,9 +49,18 @@ public class WatchContainerFragment extends BaseFragment {
 
     public void changeActiveFragment(int position) {
         viewPager.setCurrentItem(position);
+
+        if (position == 1) {
+            ((WatchFragment) fragments.get(position)).sendClientReady();
+            ((MainActivity) getBaseActivity()).hideTabLayout();
+        }
     }
 
     public SocketInteractor getSocketInteractor() {
         return socketInteractor;
+    }
+
+    public BaseFragment getNthFragment(int position) {
+        return fragments != null ? (BaseFragment) fragments.get(position) : null;
     }
 }
