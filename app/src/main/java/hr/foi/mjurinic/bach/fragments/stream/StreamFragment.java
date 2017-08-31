@@ -29,8 +29,8 @@ import timber.log.Timber;
 
 public class StreamFragment extends BaseFragment implements StreamView {
 
-    private static final int HEIGHT = 480;   // 720
-    private static final int WIDTH = 640;  // 1280
+    private static final int HEIGHT = 720;   // 720
+    private static final int WIDTH = 1280;  // 1280
 
     // Views
     private Toolbar toolbarPrimaryColor;
@@ -188,6 +188,7 @@ public class StreamFragment extends BaseFragment implements StreamView {
                 cameraPreview.setVisibility(View.GONE);
                 toolbarPrimaryColor.setVisibility(View.VISIBLE);
                 endOfStreamLayout.setVisibility(View.VISIBLE);
+                ((MainActivity) getBaseActivity()).showTabLayout();
             }
         });
     }
