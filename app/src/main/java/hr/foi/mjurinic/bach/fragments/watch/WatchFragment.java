@@ -73,7 +73,13 @@ public class WatchFragment extends BaseFragment implements WatchView {
 
     @Override
     public void clearComponents() {
-        streamPreview.setImageBitmap(null);
+        getBaseActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                streamPreview.setImageBitmap(null);
+            }
+        });
+
         ((QrScannerFragment) ((WatchContainerFragment) getParentFragment()).getNthFragment(0)).disconnect();
         ((QrScannerFragment) ((WatchContainerFragment) getParentFragment()).getNthFragment(0)).resetFragment();
         ((WatchContainerFragment) getParentFragment()).changeActiveFragment(0);

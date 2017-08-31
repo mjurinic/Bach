@@ -2,6 +2,7 @@ package hr.foi.mjurinic.bach.network;
 
 import android.support.annotation.Nullable;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -10,6 +11,9 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.zip.DataFormatException;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 
 import hr.foi.mjurinic.bach.helpers.Crypto;
 import hr.foi.mjurinic.bach.helpers.Serializator;
@@ -38,14 +42,68 @@ public class MediaSocket {
         }
     }
 
+    private byte[] compress(byte[] data) {
+        Timber.i("Packet size (uncompressed): " + data.length + "B");
+
+        try {
+            Deflater deflater = new Deflater(Deflater.BEST_COMPRESSION);
+            deflater.setInput(data);
+            deflater.finish();
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
+            byte[] buffer = new byte[512];
+
+            while (!deflater.finished()) {
+                int compressLen = deflater.deflate(buffer);
+                outputStream.write(buffer, 0, compressLen);
+            }
+
+            deflater.end();
+            outputStream.close();
+
+            return outputStream.toByteArray();
+
+        } catch (IOException e) {
+            Timber.e(e);
+        }
+
+        return null;
+    }
+
+    private byte[] decompress(byte[] data) {
+        try {
+            Inflater inflater = new Inflater();
+            inflater.setInput(data, 0, data.length);
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
+            byte[] buffer = new byte[512];
+
+            while (!inflater.finished()) {
+                int uncompressLen = inflater.inflate(buffer);
+                outputStream.write(buffer, 0, uncompressLen);
+            }
+
+            inflater.end();
+            outputStream.close();
+
+            return outputStream.toByteArray();
+
+        } catch (DataFormatException | IOException e) {
+            Timber.e(e);
+        }
+
+        return null;
+    }
+
     public boolean send(Object obj) {
         byte[] data = Serializator.serialize(obj);
-        byte[] encrypted = Crypto.encrypt(data, key);
+        byte[] encrypted = Crypto.encrypt(compress(data), key);
 
         if (data != null && encrypted != null) {
             DatagramPacket packet = new DatagramPacket(encrypted, encrypted.length, destinationIp, destinationPort);
 
             Timber.i("Sending packet to: " + destinationIp.getHostAddress() + ":" + destinationPort);
+            Timber.i("Packet size (compressed): " + encrypted.length + "B");
 
             try {
                 socket.send(packet);
@@ -53,7 +111,6 @@ public class MediaSocket {
 
             } catch (IOException e) {
                 e.printStackTrace();
-                Timber.d("[E] Packet size: " + encrypted.length + "B");
             }
 
             return false;
@@ -74,12 +131,13 @@ public class MediaSocket {
             socket.receive(packet);
 
             Timber.i("Received packet from: " + packet.getAddress().getHostAddress() + ":" + packet.getPort());
+            Timber.i("Packet size: " + packet.getLength() + "B");
 
             byte[] encrypted = Arrays.copyOfRange(buffer, 0, packet.getLength());
             byte[] decrypted = Crypto.decrypt(encrypted, key);
 
             if (decrypted != null) {
-                return new ReceivedPacket(packet.getAddress(), packet.getPort(), Serializator.deserialize(decrypted));
+                return new ReceivedPacket(packet.getAddress(), packet.getPort(), Serializator.deserialize(decompress(decrypted)));
             }
 
         } catch (IOException e) {

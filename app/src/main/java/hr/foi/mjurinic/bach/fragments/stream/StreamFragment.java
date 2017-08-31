@@ -29,6 +29,9 @@ import timber.log.Timber;
 
 public class StreamFragment extends BaseFragment implements StreamView {
 
+    private static final int HEIGHT = 480;   // 720
+    private static final int WIDTH = 640;  // 1280
+
     // Views
     private Toolbar toolbarPrimaryColor;
     private TextView tvProgress;
@@ -99,7 +102,7 @@ public class StreamFragment extends BaseFragment implements StreamView {
         Camera.Parameters params = camera.getParameters();
 
         // camParams.setPreviewSize(streamConfig.getResolution().getWidth(), streamConfig.getResolution().getHeight());
-        params.setPreviewSize(1280, 720);
+        params.setPreviewSize(WIDTH, HEIGHT);
         camera.setParameters(params);
 
         getBaseActivity().runOnUiThread(new Runnable() {
@@ -247,7 +250,7 @@ public class StreamFragment extends BaseFragment implements StreamView {
 
             if (isCameraPreviewVisible) {
                 Camera.Parameters params = camera.getParameters();
-                params.setPreviewSize(1280, 720);
+                params.setPreviewSize(WIDTH, HEIGHT);
 
                 camera.setParameters(params);
 
@@ -298,7 +301,7 @@ public class StreamFragment extends BaseFragment implements StreamView {
     private void flashOff() {
         Camera.Parameters params = camera.getParameters();
         params.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
-        params.setPreviewSize(1280, 720);
+        params.setPreviewSize(WIDTH, HEIGHT);
 
         camera.setParameters(params);
 
@@ -311,7 +314,7 @@ public class StreamFragment extends BaseFragment implements StreamView {
         if (hasFlash()) {
             Camera.Parameters params = camera.getParameters();
             params.setFlashMode(isFlashActive ? Camera.Parameters.FLASH_MODE_OFF : Camera.Parameters.FLASH_MODE_TORCH);
-            params.setPreviewSize(1280, 720);
+            params.setPreviewSize(WIDTH, HEIGHT);
 
             camera.setParameters(params);
 
