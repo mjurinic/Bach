@@ -43,8 +43,10 @@ public class MediaSocket {
     }
 
     private byte[] compress(byte[] data) {
+        Timber.i("Packet size (uncompressed): " + data.length + "B");
+
         try {
-            Deflater deflater = new Deflater();
+            Deflater deflater = new Deflater(Deflater.BEST_COMPRESSION);
             deflater.setInput(data);
             deflater.finish();
 
@@ -101,7 +103,7 @@ public class MediaSocket {
             DatagramPacket packet = new DatagramPacket(encrypted, encrypted.length, destinationIp, destinationPort);
 
             Timber.i("Sending packet to: " + destinationIp.getHostAddress() + ":" + destinationPort);
-            Timber.i("Packet size: " + encrypted.length + "B");
+            Timber.i("Packet size (compressed): " + encrypted.length + "B");
 
             try {
                 socket.send(packet);
@@ -129,14 +131,13 @@ public class MediaSocket {
             socket.receive(packet);
 
             Timber.i("Received packet from: " + packet.getAddress().getHostAddress() + ":" + packet.getPort());
+            Timber.i("Packet size: " + packet.getLength() + "B");
 
             byte[] encrypted = Arrays.copyOfRange(buffer, 0, packet.getLength());
             byte[] decrypted = Crypto.decrypt(encrypted, key);
-            byte[] uncompressed = decompress(decrypted);
 
             if (decrypted != null) {
-                Timber.i("Packet size: " + decrypted.length + "B");
-                return new ReceivedPacket(packet.getAddress(), packet.getPort(), Serializator.deserialize(uncompressed));
+                return new ReceivedPacket(packet.getAddress(), packet.getPort(), Serializator.deserialize(decompress(decrypted)));
             }
 
         } catch (IOException e) {
