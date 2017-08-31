@@ -2,15 +2,15 @@
 <layer-list
     xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:top="@dimen/separator_invisible"
+        android:top="@dimen/separator_visible"
         android:right="@dimen/separator_invisible"
-        android:bottom="@dimen/separator_visible"
+        android:bottom="@dimen/separator_invisible"
         android:left="@dimen/separator_invisible">
 
         <shape android:shape="rectangle">
             <stroke
                 android:width="@dimen/separator_stroke_width"
-                android:color="@color/listSeparatorColor" />
+                android:color="#DBDBDB" />
             <gradient
                 android:startColor="@android:color/white"
                 android:endColor="@android:color/white"/>

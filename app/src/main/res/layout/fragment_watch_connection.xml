@@ -8,7 +8,7 @@
     <include
         layout="@layout/layout_toolbar_primary_color"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/app_bar_size_x4"/>
+        android:layout_height="@dimen/app_bar_size_x3"/>
 
     <TextView
         android:id="@+id/tv_wifi_direct_instructions"

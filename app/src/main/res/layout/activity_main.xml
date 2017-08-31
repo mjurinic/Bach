@@ -4,7 +4,6 @@
               xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:background="@android:color/black"
               android:orientation="vertical"
               tools:context="hr.foi.mjurinic.bach.activities.MainActivity">
 
@@ -18,7 +17,7 @@
         android:id="@+id/main_tab_layout"
         android:layout_width="match_parent"
         android:layout_height="@dimen/navigation_bar_size"
-        android:background="@android:color/transparent"
+        android:background="@drawable/tab_layout_border"
         app:tabIndicatorColor="@android:color/transparent"/>
 
 </LinearLayout>
