@@ -59,9 +59,6 @@ public class QrScannerFragment extends BaseFragment implements QrScannerView {
 
         isInflated = true;
         qrScannerPresenter = new QrScannerPresenterImpl(((WatchContainerFragment) getParentFragment()).getSocketInteractor(), this);
-
-        initQrScanner();
-        initCameraPreview();
     }
 
     @Override

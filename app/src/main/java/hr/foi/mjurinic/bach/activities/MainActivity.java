@@ -23,7 +23,6 @@ import hr.foi.mjurinic.bach.fragments.stream.StreamContainerFragment;
 import hr.foi.mjurinic.bach.fragments.watch.QrScannerFragment;
 import hr.foi.mjurinic.bach.fragments.watch.WatchContainerFragment;
 import hr.foi.mjurinic.bach.utils.adapters.ViewPagerAdapter;
-import timber.log.Timber;
 
 public class MainActivity extends BaseActivity implements TabLayout.OnTabSelectedListener {
 
@@ -77,7 +76,6 @@ public class MainActivity extends BaseActivity implements TabLayout.OnTabSelecte
             @Override
             public void onPageSelected(int position) {
                 if (position == 0) {
-                    Timber.d("TU SEM LOL");
                     QrScannerFragment qrScannerFragment =
                             ((QrScannerFragment) ((WatchContainerFragment) fragments.get(0)).getNthFragment(0));
 

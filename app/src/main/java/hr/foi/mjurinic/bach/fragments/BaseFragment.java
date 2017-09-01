@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.widget.ProgressBar;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -18,6 +19,9 @@ public abstract class BaseFragment extends Fragment {
 
     @BindView(R.id.view_stub_base)
     ViewStub viewStub;
+
+    @BindView(R.id.vstub_progress)
+    ProgressBar progressBar;
 
     private Bundle savedInstanceState;
     protected boolean hasInflated;
@@ -52,6 +56,7 @@ public abstract class BaseFragment extends Fragment {
 
     protected void afterViewStubInflated(View originalView) {
         hasInflated = true;
+        progressBar.setVisibility(View.GONE);
     }
 
     @CallSuper
